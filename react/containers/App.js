@@ -6,9 +6,7 @@ var App = React.createClass({
 
     render: function() {
         return (
-            <main>
-                <FileDirectory />
-            </main>
+            <FileDirectory />
         )
     }
 });

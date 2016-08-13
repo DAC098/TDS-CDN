@@ -16,21 +16,42 @@ var DirContents = React.createClass({
         })
     },
     render: function() {
+        var {dir} = this.props;
+        var dir_length = dir.contents.length;
+        var dir_empty = dir_length === 0;
+        var dir_size = 0;
+        var current_directory = dir.path[dir.path.length - 1];
+        var is_root = dir.path.length === 1;
+        for(var item of dir.contents) {
+            dir_size += item.size;
+        }
         return (
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Size(bytes)</th>
-                        <th>Modified</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td onClick={() => this.props.requestFolder(this.props.dir.parent)}>..</td></tr>
-                    {this.renderContents()}
-                </tbody>
-            </table>
+            <section>
+                <p>current directory: {current_directory}</p>
+                <p>size (bytes): {dir_size}, count: {dir_length}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Size(bytes)</th>
+                            <th>Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {!is_root ?
+                            <tr><td onClick={() => this.props.requestFolder(dir.path[dir.path.length - 2])}>..</td></tr>
+                            :
+                            null
+                        }
+                        {dir_empty ?
+                            null
+                            :
+                            this.renderContents()
+                        }
+                    </tbody>
+                </table>
+            </section>
         )
     }
 });
