@@ -25,7 +25,7 @@
     "webpack-stream": "^3.2.0"
   },
   "scripts": {
-    "run": "node ./index.js",
+    "start": "node ./index.js",
     "gulp": "./node_modules/.bin/gulp",
     "gulp-webpack": "./node_modules/.bin/gulp webpack"
   },
