@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "basic cdn server using REST",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+      "express": "^4.14.0"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "node ./index.js"
@@ -17,8 +19,5 @@
   "bugs": {
     "url": "https://github.com/DAC098/cdn/issues"
   },
-  "homepage": "https://github.com/DAC098/cdn#readme",
-  "dependencies": {
-    "express": "^4.14.0"
-  }
+  "homepage": "https://github.com/DAC098/cdn#readme"
 }
