@@ -84,11 +84,16 @@ gulp.task('webpack',() => {
     buildWebpack();
 });
 
-gulp.task('watch',() => {
-    return watch([dir.react.src,dir.less.src,dir.less.imp],() => {
-        buildReact();
+gulp.task('watch-less',() => {
+    return watch([dir.less.src,dir.less.imp],() => {
         buildLess();
     });
 });
 
-gulp.task('default',['react','less','webpack','watch']);
+gulp.task('watch-react',() => {
+    return watch([dir.react.src],() => {
+        buildReact();
+    });
+});
+
+gulp.task('default',['react','less','webpack','watch-less','watch-react']);
