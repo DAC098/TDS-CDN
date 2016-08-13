@@ -7,11 +7,7 @@ var App = React.createClass({
 
 
     render: function () {
-        return React.createElement(
-            'main',
-            null,
-            React.createElement(FileDirectory, null)
-        );
+        return React.createElement(FileDirectory, null);
     }
 });
 
