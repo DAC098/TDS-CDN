@@ -15,6 +15,7 @@
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
+    "gulp-cli": "^1.2.2",
     "gulp-less": "^3.1.0",
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.9",
@@ -23,7 +24,9 @@
     "webpack-stream": "^3.2.0"
   },
   "scripts": {
-    "test": "node ./index.js"
+    "run": "node ./index.js",
+    "gulp": "./node_modules/.bin/gulp",
+    "gulp-webpack": "./node_modules/.bin/gulp webpack"
   },
   "repository": {
     "type": "git",
