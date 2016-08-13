@@ -1,0 +1,24 @@
+{
+  "name": "cdn",
+  "version": "1.0.0",
+  "description": "basic cdn server using REST",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "node ./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DAC098/cdn.git"
+  },
+  "author": "David Cathers",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DAC098/cdn/issues"
+  },
+  "homepage": "https://github.com/DAC098/cdn#readme",
+  "dependencies": {
+    "express": "^4.14.0"
+  }
+}
