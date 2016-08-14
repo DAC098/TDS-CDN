@@ -28,6 +28,11 @@ var FileDirectory = React.createClass({
         socket.on('file-data',self.handleFile);
         self.requestFolder('/');
     },
+    componentWillUnmount: function() {
+        var self = this;
+        socket.removeListener('dir-list',self.handleList);
+        socket.removeListener('file-data',self.handleFile);
+    },
     handleList: function(data) {
         var {dir,viewing} = this.state;
         if(data.list) {
