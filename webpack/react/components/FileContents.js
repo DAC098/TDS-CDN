@@ -10,13 +10,6 @@ var FileContents = React.createClass({
             'section',
             null,
             React.createElement(
-                'p',
-                null,
-                'current_directory: ',
-                dir.path[dir.path.length - 1]
-            ),
-            React.createElement('input', { onClick: () => this.props.requestFolder(dir.path[dir.path.length - 2]), type: 'button', value: 'Back' }),
-            React.createElement(
                 'a',
                 { href: file.download, download: true },
                 'Download'

@@ -3,6 +3,7 @@ var socket = require('../../socket.js');
 
 var DirContents = require('../components/DirContents.js');
 var FileContents = require('../components/FileContents.js');
+var Header = require('../components/Header.js');
 
 var FileDirectory = React.createClass({
     displayName: 'FileDirectory',
@@ -88,7 +89,12 @@ var FileDirectory = React.createClass({
         } else {
             view = React.createElement(DirContents, { dir: state.dir, requestFile: this.requestFile, requestFolder: this.requestFolder });
         }
-        return view;
+        return React.createElement(
+            'main',
+            { className: 'grid' },
+            React.createElement(Header, { dir: state.dir, viewing: state.viewing, requestFolder: this.requestFolder }),
+            view
+        );
     }
 });
 

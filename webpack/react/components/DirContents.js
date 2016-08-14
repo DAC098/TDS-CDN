@@ -34,77 +34,42 @@ var DirContents = React.createClass({
         });
     },
     render: function () {
-        var { dir } = this.props;
-        var dir_length = dir.contents.length;
-        var dir_empty = dir_length === 0;
-        var dir_size = 0;
-        var current_directory = dir.path[dir.path.length - 1];
-        var is_root = dir.path.length === 1;
-        for (var item of dir.contents) {
-            dir_size += item.size;
-        }
+        var dir_empty = this.props.dir.contents.length === 0;
         return React.createElement(
-            'section',
+            'table',
             null,
             React.createElement(
-                'p',
-                null,
-                'current directory: ',
-                current_directory
-            ),
-            React.createElement(
-                'p',
-                null,
-                'size (bytes): ',
-                dir_size,
-                ', count: ',
-                dir_length
-            ),
-            React.createElement(
-                'table',
+                'thead',
                 null,
                 React.createElement(
-                    'thead',
+                    'tr',
                     null,
                     React.createElement(
-                        'tr',
+                        'th',
                         null,
-                        React.createElement(
-                            'th',
-                            null,
-                            'Name'
-                        ),
-                        React.createElement(
-                            'th',
-                            null,
-                            'Type'
-                        ),
-                        React.createElement(
-                            'th',
-                            null,
-                            'Size(bytes)'
-                        ),
-                        React.createElement(
-                            'th',
-                            null,
-                            'Modified'
-                        )
+                        'Name'
+                    ),
+                    React.createElement(
+                        'th',
+                        null,
+                        'Type'
+                    ),
+                    React.createElement(
+                        'th',
+                        null,
+                        'Size(bytes)'
+                    ),
+                    React.createElement(
+                        'th',
+                        null,
+                        'Modified'
                     )
-                ),
-                React.createElement(
-                    'tbody',
-                    null,
-                    !is_root ? React.createElement(
-                        'tr',
-                        null,
-                        React.createElement(
-                            'td',
-                            { onClick: () => this.props.requestFolder(dir.path[dir.path.length - 2]) },
-                            '..'
-                        )
-                    ) : null,
-                    dir_empty ? null : this.renderContents()
                 )
+            ),
+            React.createElement(
+                'tbody',
+                null,
+                dir_empty ? null : this.renderContents()
             )
         );
     }

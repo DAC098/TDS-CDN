@@ -21486,6 +21486,7 @@
 
 	var DirContents = __webpack_require__(225);
 	var FileContents = __webpack_require__(227);
+	var Header = __webpack_require__(228);
 
 	var FileDirectory = React.createClass({
 	    displayName: 'FileDirectory',
@@ -21512,6 +21513,11 @@
 	        socket.on('dir-list', self.handleList);
 	        socket.on('file-data', self.handleFile);
 	        self.requestFolder('/');
+	    },
+	    componentWillUnmount: function () {
+	        var self = this;
+	        socket.removeListener('dir-list', self.handleList);
+	        socket.removeListener('file-data', self.handleFile);
 	    },
 	    handleList: function (data) {
 	        var { dir, viewing } = this.state;
@@ -21566,7 +21572,12 @@
 	        } else {
 	            view = React.createElement(DirContents, { dir: state.dir, requestFile: this.requestFile, requestFolder: this.requestFolder });
 	        }
-	        return view;
+	        return React.createElement(
+	            'main',
+	            { className: 'grid' },
+	            React.createElement(Header, { dir: state.dir, viewing: state.viewing, requestFolder: this.requestFolder }),
+	            view
+	        );
 	    }
 	});
 
@@ -29046,77 +29057,42 @@
 	        });
 	    },
 	    render: function () {
-	        var { dir } = this.props;
-	        var dir_length = dir.contents.length;
-	        var dir_empty = dir_length === 0;
-	        var dir_size = 0;
-	        var current_directory = dir.path[dir.path.length - 1];
-	        var is_root = dir.path.length === 1;
-	        for (var item of dir.contents) {
-	            dir_size += item.size;
-	        }
+	        var dir_empty = this.props.dir.contents.length === 0;
 	        return React.createElement(
-	            'section',
+	            'table',
 	            null,
 	            React.createElement(
-	                'p',
-	                null,
-	                'current directory: ',
-	                current_directory
-	            ),
-	            React.createElement(
-	                'p',
-	                null,
-	                'size (bytes): ',
-	                dir_size,
-	                ', count: ',
-	                dir_length
-	            ),
-	            React.createElement(
-	                'table',
+	                'thead',
 	                null,
 	                React.createElement(
-	                    'thead',
+	                    'tr',
 	                    null,
 	                    React.createElement(
-	                        'tr',
+	                        'th',
 	                        null,
-	                        React.createElement(
-	                            'th',
-	                            null,
-	                            'Name'
-	                        ),
-	                        React.createElement(
-	                            'th',
-	                            null,
-	                            'Type'
-	                        ),
-	                        React.createElement(
-	                            'th',
-	                            null,
-	                            'Size(bytes)'
-	                        ),
-	                        React.createElement(
-	                            'th',
-	                            null,
-	                            'Modified'
-	                        )
+	                        'Name'
+	                    ),
+	                    React.createElement(
+	                        'th',
+	                        null,
+	                        'Type'
+	                    ),
+	                    React.createElement(
+	                        'th',
+	                        null,
+	                        'Size(bytes)'
+	                    ),
+	                    React.createElement(
+	                        'th',
+	                        null,
+	                        'Modified'
 	                    )
-	                ),
-	                React.createElement(
-	                    'tbody',
-	                    null,
-	                    !is_root ? React.createElement(
-	                        'tr',
-	                        null,
-	                        React.createElement(
-	                            'td',
-	                            { onClick: () => this.props.requestFolder(dir.path[dir.path.length - 2]) },
-	                            '..'
-	                        )
-	                    ) : null,
-	                    dir_empty ? null : this.renderContents()
 	                )
+	            ),
+	            React.createElement(
+	                'tbody',
+	                null,
+	                dir_empty ? null : this.renderContents()
 	            )
 	        );
 	    }
@@ -29199,13 +29175,6 @@
 	            'section',
 	            null,
 	            React.createElement(
-	                'p',
-	                null,
-	                'current_directory: ',
-	                dir.path[dir.path.length - 1]
-	            ),
-	            React.createElement('input', { onClick: () => this.props.requestFolder(dir.path[dir.path.length - 2]), type: 'button', value: 'Back' }),
-	            React.createElement(
 	                'a',
 	                { href: file.download, download: true },
 	                'Download'
@@ -29255,6 +29224,145 @@
 	});
 
 	module.exports = FileContents;
+
+/***/ },
+/* 228 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var classnames = __webpack_require__(229);
+
+	var Header = React.createClass({
+	    displayName: 'Header',
+
+	    render: function () {
+	        var { dir, viewing } = this.props;
+	        var dir_len = dir.path.length;
+	        var viewing_root = dir.path.length === 1;
+	        var dir_info_class = classnames('row', {
+	            'active': viewing.dir
+	        });
+	        var dir_size = 0;
+	        var file_count = 0;
+	        var dir_count = 0;
+	        for (var item of dir.contents) {
+	            dir_size += item.size;
+	            file_count += item.type === 'file' ? 1 : 0;
+	            dir_count += item.type === 'dir' ? 1 : 0;
+	        }
+	        var Kb_size = Math.floor(dir_size / 1024);
+	        var Mb_size = Math.floor(dir_size / 1048576);
+	        return React.createElement(
+	            'header',
+	            { className: 'grid' },
+	            React.createElement(
+	                'section',
+	                { className: 'col-6' },
+	                React.createElement(
+	                    'ul',
+	                    { className: 'horizontal' },
+	                    React.createElement(
+	                        'li',
+	                        null,
+	                        React.createElement('input', { disabled: viewing_root, onClick: () => this.props.requestFolder(dir.path[dir_len - 2]), type: 'button', value: 'Back' })
+	                    ),
+	                    React.createElement(
+	                        'li',
+	                        null,
+	                        'directory: ',
+	                        dir.path[dir_len - 1]
+	                    )
+	                )
+	            ),
+	            React.createElement('section', { className: 'col-6' }),
+	            React.createElement(
+	                'section',
+	                { id: 'dir-info', className: dir_info_class },
+	                React.createElement(
+	                    'ul',
+	                    { className: 'horizontal' },
+	                    React.createElement(
+	                        'li',
+	                        null,
+	                        'size: ',
+	                        Mb_size,
+	                        'MiB, ',
+	                        Kb_size,
+	                        'KiB'
+	                    ),
+	                    React.createElement(
+	                        'li',
+	                        null,
+	                        'files: ',
+	                        file_count
+	                    ),
+	                    React.createElement(
+	                        'li',
+	                        null,
+	                        'folders: ',
+	                        dir_count
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = Header;
+
+/***/ },
+/* 229 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+	  Copyright (c) 2016 Jed Watson.
+	  Licensed under the MIT License (MIT), see
+	  http://jedwatson.github.io/classnames
+	*/
+	/* global define */
+
+	(function () {
+		'use strict';
+
+		var hasOwn = {}.hasOwnProperty;
+
+		function classNames () {
+			var classes = [];
+
+			for (var i = 0; i < arguments.length; i++) {
+				var arg = arguments[i];
+				if (!arg) continue;
+
+				var argType = typeof arg;
+
+				if (argType === 'string' || argType === 'number') {
+					classes.push(arg);
+				} else if (Array.isArray(arg)) {
+					classes.push(classNames.apply(null, arg));
+				} else if (argType === 'object') {
+					for (var key in arg) {
+						if (hasOwn.call(arg, key) && arg[key]) {
+							classes.push(key);
+						}
+					}
+				}
+			}
+
+			return classes.join(' ');
+		}
+
+		if (typeof module !== 'undefined' && module.exports) {
+			module.exports = classNames;
+		} else if (true) {
+			// register as 'classnames', consistent with npm package name
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+				return classNames;
+			}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+		} else {
+			window.classNames = classNames;
+		}
+	}());
+
 
 /***/ }
 /******/ ]);
