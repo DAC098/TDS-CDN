@@ -3,6 +3,7 @@ var socket = require('../../socket.js');
 
 var DirContents = require('../components/DirContents.js');
 var FileContents = require('../components/FileContents.js');
+var Header = require('../components/Header.js');
 
 var FileDirectory = React.createClass({
     getInitialState: function() {
@@ -86,7 +87,12 @@ var FileDirectory = React.createClass({
         } else {
             view = <DirContents dir={state.dir} requestFile={this.requestFile} requestFolder={this.requestFolder} />
         }
-        return view;
+        return (
+            <main className="grid">
+                <Header dir={state.dir} viewing={state.viewing} requestFolder={this.requestFolder} />
+                {view}
+            </main>
+        )
     }
 });
 

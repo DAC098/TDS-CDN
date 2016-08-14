@@ -6,8 +6,6 @@ var FileContents = React.createClass({
         var {file,dir} = this.props;
         return (
             <section>
-                <p>current_directory: {dir.path[dir.path.length - 1]}</p>
-                <input onClick={() => this.props.requestFolder(dir.path[dir.path.length - 2])} type="button" value="Back" />
                 <a href={file.download} download>Download</a>
                 <ul>
                     <li>name: {file.name}</li>
