@@ -1,14 +1,33 @@
 {
   "name": "cdn",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "basic cdn server using REST",
   "main": "index.js",
   "dependencies": {
-      "express": "^4.14.0"
+    "classnames": "^2.2.5",
+    "express": "^4.14.0",
+    "pump": "^1.0.1",
+    "react": "^15.3.0",
+    "react-dom": "^15.3.0",
+    "socket.io": "^1.4.8",
+    "socket.io-client": "^1.4.8"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "babel-preset-react": "^6.11.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-cli": "^1.2.2",
+    "gulp-less": "^3.1.0",
+    "gulp-util": "^3.0.7",
+    "gulp-watch": "^4.3.9",
+    "mocha": "^3.0.2",
+    "webpack": "^1.13.1",
+    "webpack-stream": "^3.2.0"
+  },
   "scripts": {
-    "test": "node ./index.js"
+    "start": "node ./index.js",
+    "gulp": "./node_modules/.bin/gulp",
+    "gulp-webpack": "./node_modules/.bin/gulp webpack"
   },
   "repository": {
     "type": "git",
