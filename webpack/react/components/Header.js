@@ -4,6 +4,11 @@ var classnames = require('classnames');
 var Header = React.createClass({
     displayName: 'Header',
 
+    handleUpload: function (event) {
+        var files = this.refs.file.files;
+        console.log('file input:', this.refs.file);
+        this.props.uploadFiles(files);
+    },
     render: function () {
         var { dir, viewing } = this.props;
         var dir_len = dir.path.length;
@@ -43,7 +48,16 @@ var Header = React.createClass({
                     )
                 )
             ),
-            React.createElement('section', { className: 'col-6' }),
+            React.createElement(
+                'section',
+                { className: 'col-6' },
+                React.createElement(
+                    'form',
+                    null,
+                    React.createElement('input', { type: 'file', ref: 'file' }),
+                    React.createElement('input', { type: 'button', onClick: this.handleUpload, value: 'upload' })
+                )
+            ),
             React.createElement(
                 'section',
                 { id: 'dir-info', className: dir_info_class },

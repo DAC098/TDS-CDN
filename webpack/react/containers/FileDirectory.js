@@ -5,8 +5,8 @@ var DirContents = require('../components/DirContents.js');
 var FileContents = require('../components/FileContents.js');
 var Header = require('../components/Header.js');
 
-var FileDirectory = React.createClass({
-    displayName: 'FileDirectory',
+var App = React.createClass({
+    displayName: 'App',
 
     getInitialState: function () {
         return {
@@ -98,4 +98,4 @@ var FileDirectory = React.createClass({
     }
 });
 
-module.exports = FileDirectory;
+module.exports = App;
