@@ -12,12 +12,12 @@ const webpack_config = require('./webpack.config.js');
 
 const dir = {
     react: {
-        src: './react/**/*.js',
+        src: './build/react/**/*.js',
         out: './webpack/react'
     },
     less: {
-        src: './less/main.less',
-        imp: './less/imports/**/*.less',
+        src: './build/less/main.less',
+        imp: './build/less/imports/**/*.less',
         out: './static/style'
     },
     webpack: {
