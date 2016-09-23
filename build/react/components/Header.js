@@ -2,6 +2,11 @@ var React = require('react');
 var classnames = require('classnames');
 
 var Header = React.createClass({
+    handleUpload: function(event) {
+        var files = this.refs.file.files;
+        console.log('file input:',this.refs.file);
+        this.props.uploadFiles(files);
+    },
     render: function() {
         var {dir,viewing} = this.props;
         var dir_len = dir.path.length;
@@ -28,7 +33,10 @@ var Header = React.createClass({
                     </ul>
                 </section>
                 <section className='col-6'>
-
+                    <form>
+                        <input type='file' ref='file' />
+                        <input type='button' onClick={this.handleUpload} value='upload' />
+                    </form>
                 </section>
                 <section id='dir-info' className={dir_info_class}>
                     <ul className="horizontal">
