@@ -1,5 +1,6 @@
 var React = require('react');
 var socket = require('../../socket.js');
+var store = require('../../Store.js');
 
 var DirContents = require('../components/DirContents.js');
 var FileContents = require('../components/FileContents.js');
@@ -26,6 +27,7 @@ var App = React.createClass({
     componentDidMount: function() {
         var self = this;
         let {dir} = this.state;
+        let session_dir = store.get('saved_dir');
         socket.on('dir-update',self.checkCurrentDir);
 
         socket.on('dir-list',self.handleList);
@@ -33,19 +35,20 @@ var App = React.createClass({
 
         socket.on('upload-complete',() => console.log('upload complete'));
         socket.on('upload-failed',() => console.log('upload failed'));
+        socket.on('upload-exists',() => console.log('upload exists'));
 
         socket.on('remove-complete',() => {
             console.log('remove complete');
             self.requestFolder(dir.path[dir.path.length - 2]);
         });
-        socket.on('remove-failed',() => console.log('remove failed'))
+        socket.on('remove-failed',() => console.log('remove failed'));
 
-        self.requestFolder('/');
+        self.requestFolder((session_dir) ? session_dir : '/');
     },
     componentWillUnmount: function() {
         var self = this;
-        socket.removeListener('dir-list',self.handleList);
-        socket.removeListener('file-data',self.handleFile);
+        socket.removeAllListeners();
+        store.clear();
     },
     // ------------------------------------------------------------------------
     // checks
@@ -71,6 +74,7 @@ var App = React.createClass({
             viewing.dir = true;
             viewing.file = false;
             this.setState({dir,viewing});
+            store.set('saved_dir',dir.path[dir.path.length - 1]);
         } else {
             console.log('directory list is empty');
         }
@@ -83,6 +87,7 @@ var App = React.createClass({
             viewing.dir = false;
             viewing.file = true;
             this.setState({dir,file,viewing});
+            store.set('saved_dir',dir.path[dir.path.length - 1]);
         } else {
             console.log('file data is empty');
         }
