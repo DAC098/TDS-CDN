@@ -6,3 +6,5 @@ logs
 
 static/scripts
 static/style
+
+webpack/react
