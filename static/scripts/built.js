@@ -21464,10 +21464,11 @@
 
 	var React = __webpack_require__(1);
 	var socket = __webpack_require__(176);
+	var store = __webpack_require__(224);
 
-	var DirContents = __webpack_require__(224);
-	var FileContents = __webpack_require__(226);
-	var Header = __webpack_require__(227);
+	var DirContents = __webpack_require__(225);
+	var FileContents = __webpack_require__(227);
+	var Header = __webpack_require__(228);
 
 	var App = React.createClass({
 	    displayName: 'App',
@@ -21492,6 +21493,7 @@
 	    componentDidMount: function () {
 	        var self = this;
 	        let { dir } = this.state;
+	        let session_dir = store.get('saved_dir');
 	        socket.on('dir-update', self.checkCurrentDir);
 
 	        socket.on('dir-list', self.handleList);
@@ -21499,6 +21501,7 @@
 
 	        socket.on('upload-complete', () => console.log('upload complete'));
 	        socket.on('upload-failed', () => console.log('upload failed'));
+	        socket.on('upload-exists', () => console.log('upload exists'));
 
 	        socket.on('remove-complete', () => {
 	            console.log('remove complete');
@@ -21506,12 +21509,12 @@
 	        });
 	        socket.on('remove-failed', () => console.log('remove failed'));
 
-	        self.requestFolder('/');
+	        self.requestFolder(session_dir ? session_dir : '/');
 	    },
 	    componentWillUnmount: function () {
 	        var self = this;
-	        socket.removeListener('dir-list', self.handleList);
-	        socket.removeListener('file-data', self.handleFile);
+	        socket.removeAllListeners();
+	        store.clear();
 	    },
 	    // ------------------------------------------------------------------------
 	    // checks
@@ -21537,6 +21540,7 @@
 	            viewing.dir = true;
 	            viewing.file = false;
 	            this.setState({ dir, viewing });
+	            store.set('saved_dir', dir.path[dir.path.length - 1]);
 	        } else {
 	            console.log('directory list is empty');
 	        }
@@ -21549,6 +21553,7 @@
 	            viewing.dir = false;
 	            viewing.file = true;
 	            this.setState({ dir, file, viewing });
+	            store.set('saved_dir', dir.path[dir.path.length - 1]);
 	        } else {
 	            console.log('file data is empty');
 	        }
@@ -21622,6 +21627,32 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var socket = __webpack_require__(177)('http://127.0.0.1:3050');
+
+	let reconnecting = false;
+
+	socket.on('connect',() => {
+	    console.log('connected to server')
+	});
+
+	socket.on('error',(err) => {
+	    console.log('error in the connection,',err);
+	});
+
+	socket.on('disconnect',() => console.log('disconnected from server'));
+
+	socket.on('reconnect',() => {
+	    reconnecting = false;
+	    console.log('reconnected with server');
+	});
+
+	socket.on('reconnecting',() => {
+	    if(!reconnecting) {
+	        console.log('attempting to reconnect');
+	        reconnecting = true;
+	    }
+	});
+
+	socket.on('reconnect_failed',() => console.log('failed to reconnect with server'));
 
 	module.exports = socket;
 
@@ -29053,10 +29084,66 @@
 
 /***/ },
 /* 224 */
+/***/ function(module, exports) {
+
+	function Store() {
+
+	    var is_set = (typeof window === 'undefined') ? false : true;
+
+	    var ss = (is_set) ? window.sessionStorage : null;
+
+	    var ls = (is_set) ? window.localStorage : null;
+
+	    this.get = function get(key,use_ss = true) {
+	        if(is_set) {
+	            if(use_ss || typeof use_ss === 'undefined') {
+	                return ss.getItem(key);
+	            } else {
+	                return ls.getItem(key);
+	            }
+	        }
+	    }
+
+	    this.set = function set(key,value,use_ss = true) {
+	        if(is_set) {
+	            if(use_ss || typeof use_ss === 'undefined') {
+	                ss.setItem(key,value);
+	            } else {
+	                ls.setItem(key,value);
+	            }
+	        }
+	    }
+
+	    this.remove = function remove(key,use_ss = true) {
+	        if(is_set) {
+	            if(use_ss || typeof use_ss === 'undefined') {
+	                ss.removeItem(key);
+	            } else {
+	                ls.removeItem(key);
+	            }
+	        }
+	    }
+
+	    this.clear = function clear(use_ss = true) {
+	        if(is_set) {
+	            if(use_ss || typeof use_ss === 'undefined') {
+	                ss.clear();
+	            } else {
+	                ls.clear();
+	            }
+	        }
+	    }
+	}
+
+	module.exports = new Store();
+
+
+/***/ },
+/* 225 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var { isoDate } = __webpack_require__(225);
+	var { isoDate } = __webpack_require__(226);
 
 	var DirContents = React.createClass({
 	    displayName: 'DirContents',
@@ -29135,7 +29222,7 @@
 	module.exports = DirContents;
 
 /***/ },
-/* 225 */
+/* 226 */
 /***/ function(module, exports) {
 
 	function pad(num,places = 1) {
@@ -29194,11 +29281,11 @@
 
 
 /***/ },
-/* 226 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var { isoDate } = __webpack_require__(225);
+	var { isoDate } = __webpack_require__(226);
 
 	var FileContents = React.createClass({
 	    displayName: 'FileContents',
@@ -29265,11 +29352,11 @@
 	module.exports = FileContents;
 
 /***/ },
-/* 227 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var classnames = __webpack_require__(228);
+	var classnames = __webpack_require__(229);
 
 	var Header = React.createClass({
 	    displayName: 'Header',
@@ -29364,7 +29451,7 @@
 	module.exports = Header;
 
 /***/ },
-/* 228 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
