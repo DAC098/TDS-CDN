@@ -100,4 +100,4 @@ gulp.task('watch-webpack',() => {
     return watch([dir.webpack.src,dir.webpack.imp],() => buildWebpack());
 });
 
-gulp.task('default',['react','less','webpack','watch-less','watch-react']);
+gulp.task('default',['react','less','webpack','watch-less','watch-react','watch-webpack']);
