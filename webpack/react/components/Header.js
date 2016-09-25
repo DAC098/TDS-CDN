@@ -6,7 +6,7 @@ var Header = React.createClass({
 
     handleUpload: function (event) {
         var files = this.refs.file.files;
-        console.log('file input:', this.refs.file);
+        //console.log('file input:',this.refs.file);
         this.props.uploadFiles(files);
     },
     render: function () {

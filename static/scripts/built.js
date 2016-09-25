@@ -47,10 +47,6 @@
 	var React = __webpack_require__(1);
 	var {render} = __webpack_require__(35);
 
-	var fr = new FileReader();
-
-	console.log('fr:',fr);
-
 	var App = __webpack_require__(175);
 
 	render(React.createElement(App),document.getElementById('render'));
@@ -21495,14 +21491,36 @@
 	    },
 	    componentDidMount: function () {
 	        var self = this;
+	        let { dir } = this.state;
+	        socket.on('dir-update', self.checkCurrentDir);
+
 	        socket.on('dir-list', self.handleList);
 	        socket.on('file-data', self.handleFile);
+
+	        socket.on('upload-complete', () => console.log('upload complete'));
+	        socket.on('upload-failed', () => console.log('upload failed'));
+
+	        socket.on('remove-complete', () => {
+	            console.log('remove complete');
+	            self.requestFolder(dir.path[dir.path.length - 2]);
+	        });
+	        socket.on('remove-failed', () => console.log('remove failed'));
+
 	        self.requestFolder('/');
 	    },
 	    componentWillUnmount: function () {
 	        var self = this;
 	        socket.removeListener('dir-list', self.handleList);
 	        socket.removeListener('file-data', self.handleFile);
+	    },
+	    // ------------------------------------------------------------------------
+	    // checks
+	    // ------------------------------------------------------------------------
+	    checkCurrentDir: function (location) {
+	        let { dir } = this.state;
+	        if (dir.path[dir.path.length - 1] === location) {
+	            socket.emit('dir-request', location);
+	        }
 	    },
 	    // ------------------------------------------------------------------------
 	    // navigation
@@ -21570,11 +21588,21 @@
 	            fr.readAsArrayBuffer(item);
 	        }
 	    },
+	    // ------------------------------------------------------------------------
+	    // file removing
+	    // ------------------------------------------------------------------------
+	    removeFile: function () {
+	        let { dir, file } = this.state;
+	        socket.emit('remove-file', { location: dir.path[dir.path.length - 2], name: file.data.base });
+	    },
+	    // ------------------------------------------------------------------------
+	    // render
+	    // ------------------------------------------------------------------------
 	    render: function () {
 	        var { state } = this;
 	        var view = undefined;
 	        if (this.state.viewing.file) {
-	            view = React.createElement(FileContents, { dir: state.dir, file: state.file.data, requestFolder: this.requestFolder });
+	            view = React.createElement(FileContents, { dir: state.dir, file: state.file.data, requestFolder: this.requestFolder, removeFile: this.removeFile });
 	        } else {
 	            view = React.createElement(DirContents, { dir: state.dir, requestFile: this.requestFile, requestFolder: this.requestFolder });
 	        }
@@ -29181,9 +29209,14 @@
 	            'section',
 	            null,
 	            React.createElement(
-	                'a',
-	                { href: file.download, download: true },
-	                'Download'
+	                'section',
+	                null,
+	                React.createElement(
+	                    'a',
+	                    { href: file.download, download: true },
+	                    'Download'
+	                ),
+	                React.createElement('input', { type: 'button', onClick: () => this.props.removeFile(), value: 'delete' })
 	            ),
 	            React.createElement(
 	                'ul',
@@ -29243,7 +29276,7 @@
 
 	    handleUpload: function (event) {
 	        var files = this.refs.file.files;
-	        console.log('file input:', this.refs.file);
+	        //console.log('file input:',this.refs.file);
 	        this.props.uploadFiles(files);
 	    },
 	    render: function () {

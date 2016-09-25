@@ -6,7 +6,10 @@ var FileContents = React.createClass({
         var {file,dir} = this.props;
         return (
             <section>
-                <a href={file.download} download>Download</a>
+                <section>
+                    <a href={file.download} download>Download</a>
+                    <input type='button' onClick={() => this.props.removeFile()} value='delete'/>
+                </section>
                 <ul>
                     <li>name: {file.name}</li>
                     <li>extension: {file.ext}</li>

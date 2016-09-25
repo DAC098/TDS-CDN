@@ -3,3 +3,6 @@ npm-depbug.log
 node_modules
 
 logs
+
+static/scripts
+static/style

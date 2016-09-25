@@ -10,9 +10,14 @@ var FileContents = React.createClass({
             'section',
             null,
             React.createElement(
-                'a',
-                { href: file.download, download: true },
-                'Download'
+                'section',
+                null,
+                React.createElement(
+                    'a',
+                    { href: file.download, download: true },
+                    'Download'
+                ),
+                React.createElement('input', { type: 'button', onClick: () => this.props.removeFile(), value: 'delete' })
             ),
             React.createElement(
                 'ul',
