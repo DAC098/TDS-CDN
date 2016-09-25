@@ -27,14 +27,29 @@ var App = React.createClass({
     },
     componentDidMount: function () {
         var self = this;
+        socket.on('dir-update', self.checkCurrentDir);
+
         socket.on('dir-list', self.handleList);
         socket.on('file-data', self.handleFile);
+
+        socket.on('upload-complete', () => console.log('upload complete'));
+        socket.on('upload-failed', () => console.log('upload failed'));
+
         self.requestFolder('/');
     },
     componentWillUnmount: function () {
         var self = this;
         socket.removeListener('dir-list', self.handleList);
         socket.removeListener('file-data', self.handleFile);
+    },
+    // ------------------------------------------------------------------------
+    // checks
+    // ------------------------------------------------------------------------
+    checkCurrentDir: function (location) {
+        let { dir } = this.state;
+        if (dir.path[dir.path.length - 1] === location) {
+            socket.emit('dir-request', location);
+        }
     },
     // ------------------------------------------------------------------------
     // navigation
@@ -102,6 +117,9 @@ var App = React.createClass({
             fr.readAsArrayBuffer(item);
         }
     },
+    // ------------------------------------------------------------------------
+    // render
+    // ------------------------------------------------------------------------
     render: function () {
         var { state } = this;
         var view = undefined;
