@@ -6,6 +6,23 @@ var DirContents = require('../components/DirContents.js');
 var FileContents = require('../components/FileContents.js');
 var Header = require('../components/Header.js');
 
+function joinPath(...paths) {
+    let str = '';
+    let len = paths.length;
+    for(let c = 0; c < len; ++c) {
+        str = `${str}/${paths[c]}`;
+    }
+    return str;
+}
+
+function splitPath(str) {
+    let rtn = str.split('/');
+    if(rtn[0] === '') {
+        rtn.shift();
+    }
+    return rtn;
+}
+
 var App = React.createClass({
     getInitialState: function() {
         return {
@@ -110,7 +127,7 @@ var App = React.createClass({
         }
     },
     // ------------------------------------------------------------------------
-    // file uploading
+    // uploading contents
     // ------------------------------------------------------------------------
     uploadFiles: function(files) {
         let {dir} = this.state;
@@ -128,7 +145,7 @@ var App = React.createClass({
         }
     },
     // ------------------------------------------------------------------------
-    // file removing
+    // removing contents
     // ------------------------------------------------------------------------
     removeFile: function() {
         let {dir,file} = this.state;
