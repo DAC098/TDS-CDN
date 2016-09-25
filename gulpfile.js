@@ -22,6 +22,7 @@ const dir = {
     },
     webpack: {
         src: './webpack/main.js',
+        imp: './webpack/*.js',
         out: './static/scripts'
     }
 }
@@ -46,7 +47,10 @@ function buildReact() {
             presets: ['react']
         }),
         gulp.dest(dir.react.out)
-    ],(err) => handleStream('React',err));
+    ],(err) => {
+        handleStream('React',err)
+        buildWebpack();
+    });
 }
 
 function buildLess() {
@@ -85,15 +89,15 @@ gulp.task('webpack',() => {
 });
 
 gulp.task('watch-less',() => {
-    return watch([dir.less.src,dir.less.imp],() => {
-        buildLess();
-    });
+    return watch([dir.less.src,dir.less.imp],() => buildLess());
 });
 
 gulp.task('watch-react',() => {
-    return watch([dir.react.src],() => {
-        buildReact();
-    });
+    return watch([dir.react.src],() => buildReact());
+});
+
+gulp.task('watch-webpack',() => {
+    return watch([dir.webpack.src,dir.webpack.imp],() => buildWebpack());
 });
 
 gulp.task('default',['react','less','webpack','watch-less','watch-react']);
