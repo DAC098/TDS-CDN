@@ -21491,6 +21491,7 @@
 	    },
 	    componentDidMount: function () {
 	        var self = this;
+	        let { dir } = this.state;
 	        socket.on('dir-update', self.checkCurrentDir);
 
 	        socket.on('dir-list', self.handleList);
@@ -21498,6 +21499,12 @@
 
 	        socket.on('upload-complete', () => console.log('upload complete'));
 	        socket.on('upload-failed', () => console.log('upload failed'));
+
+	        socket.on('remove-complete', () => {
+	            console.log('remove complete');
+	            self.requestFolder(dir.path[dir.path.length - 2]);
+	        });
+	        socket.on('remove-failed', () => console.log('remove failed'));
 
 	        self.requestFolder('/');
 	    },
@@ -21582,13 +21589,20 @@
 	        }
 	    },
 	    // ------------------------------------------------------------------------
+	    // file removing
+	    // ------------------------------------------------------------------------
+	    removeFile: function () {
+	        let { dir, file } = this.state;
+	        socket.emit('remove-file', { location: dir.path[dir.path.length - 2], name: file.data.base });
+	    },
+	    // ------------------------------------------------------------------------
 	    // render
 	    // ------------------------------------------------------------------------
 	    render: function () {
 	        var { state } = this;
 	        var view = undefined;
 	        if (this.state.viewing.file) {
-	            view = React.createElement(FileContents, { dir: state.dir, file: state.file.data, requestFolder: this.requestFolder });
+	            view = React.createElement(FileContents, { dir: state.dir, file: state.file.data, requestFolder: this.requestFolder, removeFile: this.removeFile });
 	        } else {
 	            view = React.createElement(DirContents, { dir: state.dir, requestFile: this.requestFile, requestFolder: this.requestFolder });
 	        }
@@ -29195,9 +29209,14 @@
 	            'section',
 	            null,
 	            React.createElement(
-	                'a',
-	                { href: file.download, download: true },
-	                'Download'
+	                'section',
+	                null,
+	                React.createElement(
+	                    'a',
+	                    { href: file.download, download: true },
+	                    'Download'
+	                ),
+	                React.createElement('input', { type: 'button', onClick: () => this.props.removeFile(), value: 'delete' })
 	            ),
 	            React.createElement(
 	                'ul',
