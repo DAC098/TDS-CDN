@@ -21465,39 +21465,51 @@
 	var React = __webpack_require__(1);
 	var socket = __webpack_require__(176);
 	var store = __webpack_require__(224);
+	var { joinPath, splitPath } = __webpack_require__(225);
 
-	var DirContents = __webpack_require__(225);
-	var FileContents = __webpack_require__(227);
-	var Header = __webpack_require__(228);
+	var DirContents = __webpack_require__(226);
+	var FileContents = __webpack_require__(228);
+	var Header = __webpack_require__(229);
 
 	var App = React.createClass({
 	    displayName: 'App',
 
 	    getInitialState: function () {
 	        return {
-	            dir: {
+	            dir: [],
+	            file: {},
+	            request: {
+	                type: '',
 	                path: [],
-	                contents: [],
-	                request: '',
-	                go_back: false
+	                filled: false
 	            },
-	            file: {
-	                data: {}
-	            },
-	            viewing: {
-	                file: false,
-	                dir: true
+	            nav: {
+	                path: [],
+	                type: {
+	                    file: false,
+	                    dir: false
+	                }
 	            }
 	        };
 	    },
 	    componentDidMount: function () {
 	        var self = this;
-	        let { dir } = this.state;
-	        let session_dir = store.get('saved_dir');
+	        let { nav } = this.state;
+	        let session_path = store.get('path'),
+	            session_type = store.get('type');
 	        socket.on('dir-update', self.checkCurrentDir);
 
-	        socket.on('dir-list', self.handleList);
-	        socket.on('file-data', self.handleFile);
+	        socket.on('dir-list', data => self.handleData('dir', data));
+	        socket.on('dir-not-found', () => {
+	            console.log('directory not found');
+	            self.request();
+	        });
+
+	        socket.on('file-data', data => self.handleData('file', data));
+	        socket.on('file-not-found', () => {
+	            console.log('file not found');
+	            self.request();
+	        });
 
 	        socket.on('upload-complete', () => console.log('upload complete'));
 	        socket.on('upload-failed', () => console.log('upload failed'));
@@ -21505,11 +21517,15 @@
 
 	        socket.on('remove-complete', () => {
 	            console.log('remove complete');
-	            self.requestFolder(dir.path[dir.path.length - 2]);
+	            self.request('back');
 	        });
 	        socket.on('remove-failed', () => console.log('remove failed'));
 
-	        self.requestFolder(session_dir ? session_dir : '/');
+	        if (session_path && session_type) {
+	            self.request('returned', session_type, splitPath(session_path));
+	        } else {
+	            self.request();
+	        }
 	    },
 	    componentWillUnmount: function () {
 	        var self = this;
@@ -21520,73 +21536,100 @@
 	    // checks
 	    // ------------------------------------------------------------------------
 	    checkCurrentDir: function (location) {
-	        let { dir } = this.state;
-	        if (dir.path[dir.path.length - 1] === location) {
+	        // FIX ME HERE
+	        let { nav } = this.state;
+	        let check = joinPath(nav.path);
+	        if (check === location) {
 	            socket.emit('dir-request', location);
 	        }
 	    },
 	    // ------------------------------------------------------------------------
 	    // navigation
 	    // ------------------------------------------------------------------------
-	    handleList: function (data) {
-	        var { dir, viewing } = this.state;
-	        if (data.list) {
-	            dir.contents = Array.isArray(data.list) ? data.list : dir.contents;
-	            if (dir.go_back) {
-	                dir.path.pop();
-	            } else {
-	                dir.path.push(dir.request);
+	    handleData: function (type, returned) {
+	        let { dir, file, nav, request } = this.state;
+	        let { data } = returned;
+	        if (data) {
+	            switch (type) {
+	                case 'dir':
+	                    dir = Array.isArray(data) ? data : dir;
+	                    nav.type.dir = true;
+	                    nav.type.file = false;
+	                    break;
+	                case 'file':
+	                    file = data;
+	                    nav.type.dir = false;
+	                    nav.type.file = true;
+	                    break;
 	            }
-	            viewing.dir = true;
-	            viewing.file = false;
-	            this.setState({ dir, viewing });
-	            store.set('saved_dir', dir.path[dir.path.length - 1]);
+	            nav.path = request.path;
+	            request.filled = true;
+	            store.set('type', type);
+	            store.set('path', joinPath(nav.path));
+	            this.setState({ dir, file, nav, request });
 	        } else {
-	            console.log('directory list is empty');
+	            console.log('no data returned from request');
 	        }
 	    },
-	    handleFile: function (info) {
-	        var { dir, file, viewing } = this.state;
-	        if (info.data) {
-	            dir.path.push(dir.request);
-	            file.data = info.data;
-	            viewing.dir = false;
-	            viewing.file = true;
-	            this.setState({ dir, file, viewing });
-	            store.set('saved_dir', dir.path[dir.path.length - 1]);
-	        } else {
-	            console.log('file data is empty');
+	    request: function (direction, type, path) {
+	        let { nav, request, dir } = this.state;
+	        let go_back = false,
+	            full_path = '';
+	        switch (direction) {
+	            case 'forward':
+	                console.log('going down directory');
+	                request.path.push(path);
+	                break;
+	            case 'back':
+	                console.log('going up direcotory');
+	                request.path.pop();
+	                type = 'dir';
+	                go_back = true;
+	                break;
+	            case 'returned':
+	                console.log('returning to saved nav');
+	                request.path = path;
+	                break;
+	            default:
+	                type = 'dir';
+	                request.path = [];
+	                console.log('requesting root directory');
 	        }
-	    },
-	    requestFile: function (path) {
-	        var { dir } = this.state;
-	        dir.request = path;
-	        socket.emit('file-request', path);
-	        this.setState({ dir });
-	    },
-	    requestFolder: function (path) {
-	        var { dir } = this.state;
-	        dir.go_back = path === dir.path[dir.path.length - 2];
-	        dir.request = path;
-	        this.setState({ dir });
-	        if (this.state.viewing.file && dir.go_back) {
-	            this.handleList({ list: true });
-	        } else {
-	            socket.emit('dir-request', path);
+	        full_path = joinPath(request.path);
+	        request.filled = false;
+	        switch (type) {
+	            case 'file':
+	                request.type = type;
+	                console.log('requesting file');
+	                socket.emit('file-request', full_path);
+	                break;
+	            case 'dir':
+	                request.type = type;
+	                if (go_back && nav.type.file && dir.length !== 0) {
+	                    console.log('returning to stored dir');
+	                    this.handleData('dir', { data: true });
+	                } else {
+	                    console.log('requesting dir');
+	                    socket.emit('dir-request', full_path);
+	                }
+	                break;
+	            default:
+	                console.log('unknown type:', type);
 	        }
+	        this.setState({ nav, request });
 	    },
 	    // ------------------------------------------------------------------------
-	    // file uploading
+	    // uploading content
 	    // ------------------------------------------------------------------------
 	    uploadFiles: function (files) {
-	        let { dir } = this.state;
+	        let { nav } = this.state;
 	        for (let item of files) {
 	            console.log('file:', item);
 	            let fr = new FileReader();
 	            fr.addEventListener('loadend', () => {
 	                socket.emit('upload-file', {
 	                    data: fr.result,
-	                    location: dir.path[dir.path.length - 1],
+	                    location: joinPath(nav.path),
 	                    name: item.name
 	                });
 	            });
@@ -21594,27 +21637,28 @@
 	        }
 	    },
 	    // ------------------------------------------------------------------------
-	    // file removing
+	    // removing content
 	    // ------------------------------------------------------------------------
 	    removeFile: function () {
-	        let { dir, file } = this.state;
-	        socket.emit('remove-file', { location: dir.path[dir.path.length - 2], name: file.data.base });
+	        let { nav, file } = this.state;
+	        socket.emit('remove-file', { location: joinPath(nav.path), name: file.base });
 	    },
 	    // ------------------------------------------------------------------------
 	    // render
 	    // ------------------------------------------------------------------------
 	    render: function () {
-	        var { state } = this;
-	        var view = undefined;
-	        if (this.state.viewing.file) {
-	            view = React.createElement(FileContents, { dir: state.dir, file: state.file.data, requestFolder: this.requestFolder, removeFile: this.removeFile });
+	        let { state } = this;
+	        let { nav } = state;
+	        let view = undefined;
+	        if (nav.type.file) {
+	            view = React.createElement(FileContents, { file: state.file, removeFile: this.removeFile });
 	        } else {
-	            view = React.createElement(DirContents, { dir: state.dir, requestFile: this.requestFile, requestFolder: this.requestFolder });
+	            view = React.createElement(DirContents, { dir: state.dir, request: this.request });
 	        }
 	        return React.createElement(
 	            'main',
 	            { className: 'grid' },
-	            React.createElement(Header, { dir: state.dir, viewing: state.viewing, requestFolder: this.requestFolder, uploadFiles: this.uploadFiles }),
+	            React.createElement(Header, { nav: nav, info: nav.type.file ? state.file : state.dir, request: this.request, uploadFiles: this.uploadFiles }),
 	            view
 	        );
 	    }
@@ -29140,20 +29184,52 @@
 
 /***/ },
 /* 225 */
+/***/ function(module, exports) {
+
+	exports.joinPath = function joinPath(paths = []) {
+	    if(typeof paths === 'undefined' || paths.length === 0) {
+	        return '/';
+	    }
+	    let str = '';
+	    let len = paths.length;
+	    for(let c = 0; c < len; ++c) {
+	        paths[c] = (paths[c]) ? paths[c].replace('/','') : '';
+	        str = (paths[c] !== '') ? `${str}/${paths[c]}` : str;
+	    }
+	    return str;
+	}
+
+	exports.splitPath = function splitPath(str) {
+	    let rtn = str.split('/');
+	    let len = rtn.length,
+	        c = 0;
+	    while(c < len) {
+	        if(rtn[c] === '') {
+	            rtn.shift();
+	            --len;
+	        } else {
+	            ++c;
+	        }
+	    }
+	    return rtn;
+	}
+
+
+/***/ },
+/* 226 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var { isoDate } = __webpack_require__(226);
+	var { isoDate } = __webpack_require__(227);
 
 	var DirContents = React.createClass({
 	    displayName: 'DirContents',
 
 	    renderContents: function () {
-	        return this.props.dir.contents.map((element, index) => {
-	            var call = element.type === 'file' ? this.props.requestFile : this.props.requestFolder;
+	        return this.props.dir.map((element, index) => {
 	            return React.createElement(
 	                'tr',
-	                { key: index, onClick: () => call(element.url) },
+	                { key: index, onClick: () => this.props.request('forward', element.type, element.name) },
 	                React.createElement(
 	                    'td',
 	                    null,
@@ -29178,7 +29254,7 @@
 	        });
 	    },
 	    render: function () {
-	        var dir_empty = this.props.dir.contents.length === 0;
+	        var dir_empty = this.props.dir.length === 0;
 	        return React.createElement(
 	            'table',
 	            null,
@@ -29222,7 +29298,7 @@
 	module.exports = DirContents;
 
 /***/ },
-/* 226 */
+/* 227 */
 /***/ function(module, exports) {
 
 	function pad(num,places = 1) {
@@ -29281,17 +29357,17 @@
 
 
 /***/ },
-/* 227 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var { isoDate } = __webpack_require__(226);
+	var { isoDate } = __webpack_require__(227);
 
 	var FileContents = React.createClass({
 	    displayName: 'FileContents',
 
 	    render: function () {
-	        var { file, dir } = this.props;
+	        var { file } = this.props;
 	        return React.createElement(
 	            'section',
 	            null,
@@ -29352,11 +29428,35 @@
 	module.exports = FileContents;
 
 /***/ },
-/* 228 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var classnames = __webpack_require__(229);
+	var classnames = __webpack_require__(230);
+
+	var { joinPath } = __webpack_require__(225);
+
+	function contentData(content) {
+	    let rtn = {
+	        size: 0,
+	        files: 0,
+	        dirs: 0,
+	        Kb: 0,
+	        Mb: 0
+	    };
+	    if (Array.isArray(content)) {
+	        for (let item of content) {
+	            rtn.size += item.size;
+	            rtn.files += item.type === 'file' ? 1 : 0;
+	            rtn.dirs += item.type === 'dir' ? 1 : 0;
+	        }
+	    } else {
+	        rtn.size = content.size;
+	    }
+	    rtn.KiB = Math.floor(rtn.size / 1024);
+	    rtn.MiB = Math.floor(rtn.size / 1048576);
+	    return rtn;
+	}
 
 	var Header = React.createClass({
 	    displayName: 'Header',
@@ -29367,22 +29467,8 @@
 	        this.props.uploadFiles(files);
 	    },
 	    render: function () {
-	        var { dir, viewing } = this.props;
-	        var dir_len = dir.path.length;
-	        var viewing_root = dir.path.length === 1;
-	        var dir_info_class = classnames('row', {
-	            'active': viewing.dir
-	        });
-	        var dir_size = 0;
-	        var file_count = 0;
-	        var dir_count = 0;
-	        for (var item of dir.contents) {
-	            dir_size += item.size;
-	            file_count += item.type === 'file' ? 1 : 0;
-	            dir_count += item.type === 'dir' ? 1 : 0;
-	        }
-	        var Kb_size = Math.floor(dir_size / 1024);
-	        var Mb_size = Math.floor(dir_size / 1048576);
+	        var { nav } = this.props;
+	        let meta = contentData(this.props.info);
 	        return React.createElement(
 	            'header',
 	            { className: 'grid' },
@@ -29395,13 +29481,13 @@
 	                    React.createElement(
 	                        'li',
 	                        null,
-	                        React.createElement('input', { disabled: viewing_root, onClick: () => this.props.requestFolder(dir.path[dir_len - 2]), type: 'button', value: 'Back' })
+	                        React.createElement('input', { disabled: nav.path.length === 0, onClick: () => this.props.request('back', 'dir'), type: 'button', value: 'Back' })
 	                    ),
 	                    React.createElement(
 	                        'li',
 	                        null,
 	                        'directory: ',
-	                        dir.path[dir_len - 1]
+	                        joinPath(nav.path)
 	                    )
 	                )
 	            ),
@@ -29417,7 +29503,7 @@
 	            ),
 	            React.createElement(
 	                'section',
-	                { id: 'dir-info', className: dir_info_class },
+	                { id: 'dir-info', className: 'row' },
 	                React.createElement(
 	                    'ul',
 	                    { className: 'horizontal' },
@@ -29425,23 +29511,19 @@
 	                        'li',
 	                        null,
 	                        'size: ',
-	                        Mb_size,
-	                        'MiB, ',
-	                        Kb_size,
+	                        meta.MiB,
+	                        'MiB | ',
+	                        meta.KiB,
 	                        'KiB'
 	                    ),
-	                    React.createElement(
+	                    nav.type.dir ? React.createElement(
 	                        'li',
 	                        null,
 	                        'files: ',
-	                        file_count
-	                    ),
-	                    React.createElement(
-	                        'li',
-	                        null,
-	                        'folders: ',
-	                        dir_count
-	                    )
+	                        meta.files,
+	                        ', folders: ',
+	                        meta.dirs
+	                    ) : null
 	                )
 	            )
 	        );
@@ -29451,7 +29533,7 @@
 	module.exports = Header;
 
 /***/ },
-/* 229 */
+/* 230 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
