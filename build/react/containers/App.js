@@ -1,54 +1,49 @@
 var React = require('react');
 var socket = require('../../socket.js');
 var store = require('../../Store.js');
+var {joinPath,splitPath} = require('../../misc.js');
 
 var DirContents = require('../components/DirContents.js');
 var FileContents = require('../components/FileContents.js');
 var Header = require('../components/Header.js');
 
-function joinPath(...paths) {
-    let str = '';
-    let len = paths.length;
-    for(let c = 0; c < len; ++c) {
-        str = `${str}/${paths[c]}`;
-    }
-    return str;
-}
-
-function splitPath(str) {
-    let rtn = str.split('/');
-    if(rtn[0] === '') {
-        rtn.shift();
-    }
-    return rtn;
-}
-
 var App = React.createClass({
     getInitialState: function() {
         return {
-            dir: {
+            dir: [],
+            file: {},
+            request: {
+                type: '',
                 path: [],
-                contents: [],
-                request: '',
-                go_back: false,
+                filled: false,
             },
-            file: {
-                data: {}
-            },
-            viewing: {
-                file: false,
-                dir: true,
+            nav: {
+                path: [],
+                type: {
+                    file: false,
+                    dir: false,
+                }
             }
         }
     },
     componentDidMount: function() {
         var self = this;
-        let {dir} = this.state;
-        let session_dir = store.get('saved_dir');
+        let {nav} = this.state;
+        let session_path = store.get('path'),
+            session_type = store.get('type');
         socket.on('dir-update',self.checkCurrentDir);
 
-        socket.on('dir-list',self.handleList);
-        socket.on('file-data',self.handleFile);
+        socket.on('dir-list',(data) => self.handleData('dir',data));
+        socket.on('dir-not-found',() => {
+            console.log('directory not found');
+            self.request();
+        });
+
+        socket.on('file-data',(data) => self.handleData('file',data));
+        socket.on('file-not-found',() => {
+            console.log('file not found');
+            self.request();
+        });
 
         socket.on('upload-complete',() => console.log('upload complete'));
         socket.on('upload-failed',() => console.log('upload failed'));
@@ -56,11 +51,15 @@ var App = React.createClass({
 
         socket.on('remove-complete',() => {
             console.log('remove complete');
-            self.requestFolder(dir.path[dir.path.length - 2]);
+            self.request('back');
         });
         socket.on('remove-failed',() => console.log('remove failed'));
 
-        self.requestFolder((session_dir) ? session_dir : '/');
+        if(session_path && session_type) {
+            self.request('returned',session_type,splitPath(session_path));
+        } else {
+            self.request();
+        }
     },
     componentWillUnmount: function() {
         var self = this;
@@ -71,73 +70,100 @@ var App = React.createClass({
     // checks
     // ------------------------------------------------------------------------
     checkCurrentDir: function(location) {
-        let {dir} = this.state;
-        if(dir.path[dir.path.length - 1] === location) {
+        // FIX ME HERE
+        let {nav} = this.state;
+        let check = joinPath(nav.path);
+        if(check === location) {
             socket.emit('dir-request',location);
         }
     },
     // ------------------------------------------------------------------------
     // navigation
     // ------------------------------------------------------------------------
-    handleList: function(data) {
-        var {dir,viewing} = this.state;
-        if(data.list) {
-            dir.contents = (Array.isArray(data.list)) ? data.list : dir.contents;
-            if(dir.go_back) {
-                dir.path.pop();
-            } else {
-                dir.path.push(dir.request);
+    handleData: function(type,returned) {
+        let {dir,file,nav,request} = this.state;
+        let {data} = returned;
+        if(data) {
+            switch (type) {
+                case 'dir':
+                    dir = (Array.isArray(data)) ? data : dir;
+                    nav.type.dir = true;
+                    nav.type.file = false;
+                    break;
+                case 'file':
+                    file = data;
+                    nav.type.dir = false;
+                    nav.type.file = true;
+                    break;
             }
-            viewing.dir = true;
-            viewing.file = false;
-            this.setState({dir,viewing});
-            store.set('saved_dir',dir.path[dir.path.length - 1]);
+            nav.path = request.path;
+            request.filled = true;
+            store.set('type',type);
+            store.set('path',joinPath(nav.path));
+            this.setState({dir,file,nav,request});
         } else {
-            console.log('directory list is empty');
+            console.log('no data returned from request');
         }
     },
-    handleFile: function(info) {
-        var {dir,file,viewing} = this.state;
-        if(info.data) {
-            dir.path.push(dir.request);
-            file.data = info.data;
-            viewing.dir = false;
-            viewing.file = true;
-            this.setState({dir,file,viewing});
-            store.set('saved_dir',dir.path[dir.path.length - 1]);
-        } else {
-            console.log('file data is empty');
+    request: function(direction,type,path) {
+        let {nav,request,dir} = this.state;
+        let go_back = false,
+            full_path = '';
+        switch (direction) {
+            case 'forward':
+                console.log('going down directory');
+                request.path.push(path);
+                break;
+            case 'back':
+                console.log('going up direcotory');
+                request.path.pop();
+                type = 'dir';
+                go_back = true;
+                break;
+            case 'returned':
+                console.log('returning to saved nav');
+                request.path = path;
+                break;
+            default:
+                type = 'dir';
+                request.path = [];
+                console.log('requesting root directory');
         }
-    },
-    requestFile: function(path) {
-        var {dir} = this.state;
-        dir.request = path;
-        socket.emit('file-request',path);
-        this.setState({dir});
-    },
-    requestFolder: function(path) {
-        var {dir} = this.state;
-        dir.go_back = path === dir.path[dir.path.length - 2];
-        dir.request = path;
-        this.setState({dir});
-        if(this.state.viewing.file && dir.go_back) {
-            this.handleList({list: true})
-        } else {
-            socket.emit('dir-request',path);
+        full_path = joinPath(request.path);
+        request.filled = false;
+        switch (type) {
+            case 'file':
+                request.type = type;
+                console.log('requesting file');
+                socket.emit('file-request',full_path);
+                break;
+            case 'dir':
+                request.type = type;
+                if(go_back && nav.type.file && dir.length !== 0) {
+                    console.log('returning to stored dir');
+                    this.handleData('dir',{data: true});
+                } else {
+                    console.log('requesting dir');
+                    socket.emit('dir-request',full_path);
+                }
+                break;
+            default:
+                console.log('unknown type:',type);
         }
+        this.setState({nav,request});
     },
     // ------------------------------------------------------------------------
-    // uploading contents
+    // uploading content
     // ------------------------------------------------------------------------
     uploadFiles: function(files) {
-        let {dir} = this.state;
+        let {nav} = this.state;
         for(let item of files) {
             console.log('file:',item);
             let fr = new FileReader();
             fr.addEventListener('loadend',() => {
                 socket.emit('upload-file',({
                     data: fr.result,
-                    location: dir.path[dir.path.length - 1],
+                    location: joinPath(nav.path),
                     name: item.name,
                 }));
             });
@@ -145,26 +171,27 @@ var App = React.createClass({
         }
     },
     // ------------------------------------------------------------------------
-    // removing contents
+    // removing content
     // ------------------------------------------------------------------------
     removeFile: function() {
-        let {dir,file} = this.state;
-        socket.emit('remove-file',{location:dir.path[dir.path.length - 2],name:file.data.base});
+        let {nav,file} = this.state;
+        socket.emit('remove-file',{location:joinPath(nav.path),name:file.base});
     },
     // ------------------------------------------------------------------------
     // render
     // ------------------------------------------------------------------------
     render: function() {
-        var {state} = this;
-        var view = undefined;
-        if(this.state.viewing.file) {
-            view = <FileContents dir={state.dir} file={state.file.data} requestFolder={this.requestFolder} removeFile={this.removeFile}/>
+        let {state} = this;
+        let {nav} = state;
+        let view = undefined;
+        if(nav.type.file) {
+            view = <FileContents file={state.file} removeFile={this.removeFile}/>
         } else {
-            view = <DirContents dir={state.dir} requestFile={this.requestFile} requestFolder={this.requestFolder} />
+            view = <DirContents dir={state.dir} request={this.request} />
         }
         return (
             <main className="grid">
-                <Header dir={state.dir} viewing={state.viewing} requestFolder={this.requestFolder} uploadFiles={this.uploadFiles} />
+                <Header nav={nav} info={(nav.type.file) ? state.file : state.dir} request={this.request} uploadFiles={this.uploadFiles} />
                 {view}
             </main>
         )
