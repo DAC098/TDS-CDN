@@ -5,11 +5,10 @@ var DirContents = React.createClass({
     displayName: 'DirContents',
 
     renderContents: function () {
-        return this.props.dir.contents.map((element, index) => {
-            var call = element.type === 'file' ? this.props.requestFile : this.props.requestFolder;
+        return this.props.dir.map((element, index) => {
             return React.createElement(
                 'tr',
-                { key: index, onClick: () => call(element.url) },
+                { key: index, onClick: () => this.props.request('forward', element.type, element.name) },
                 React.createElement(
                     'td',
                     null,
@@ -34,7 +33,7 @@ var DirContents = React.createClass({
         });
     },
     render: function () {
-        var dir_empty = this.props.dir.contents.length === 0;
+        var dir_empty = this.props.dir.length === 0;
         return React.createElement(
             'table',
             null,

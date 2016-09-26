@@ -5,7 +5,7 @@ var FileContents = React.createClass({
     displayName: 'FileContents',
 
     render: function () {
-        var { file, dir } = this.props;
+        var { file } = this.props;
         return React.createElement(
             'section',
             null,

@@ -3,20 +3,19 @@ var {isoDate} = require('../../../lib/misc.js');
 
 var DirContents = React.createClass({
     renderContents: function() {
-        return this.props.dir.contents.map((element,index) => {
-            var call = (element.type === 'file') ? this.props.requestFile : this.props.requestFolder;
+        return this.props.dir.map((element,index) => {
             return (
-                <tr key={index} onClick={() => call(element.url)}>
+                <tr key={index} onClick={() => this.props.request('forward',element.type,element.name)}>
                     <td>{element.name}</td>
                     <td>{element.type}</td>
                     <td>{element.size}</td>
                     <td>{isoDate(element.mtime)}</td>
                 </tr>
-            )
-        })
+            );
+        });
     },
     render: function() {
-        var dir_empty = this.props.dir.contents.length === 0;
+        var dir_empty = this.props.dir.length === 0;
         return (
             <table>
                 <thead>

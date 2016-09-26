@@ -3,7 +3,7 @@ var {isoDate} = require('../../../lib/misc.js');
 
 var FileContents = React.createClass({
     render: function() {
-        var {file,dir} = this.props;
+        var {file} = this.props;
         return (
             <section>
                 <section>

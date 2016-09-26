@@ -1,6 +1,30 @@
 var React = require('react');
 var classnames = require('classnames');
 
+var { joinPath } = require('../../misc.js');
+
+function contentData(content) {
+    let rtn = {
+        size: 0,
+        files: 0,
+        dirs: 0,
+        Kb: 0,
+        Mb: 0
+    };
+    if (Array.isArray(content)) {
+        for (let item of content) {
+            rtn.size += item.size;
+            rtn.files += item.type === 'file' ? 1 : 0;
+            rtn.dirs += item.type === 'dir' ? 1 : 0;
+        }
+    } else {
+        rtn.size = content.size;
+    }
+    rtn.KiB = Math.floor(rtn.size / 1024);
+    rtn.MiB = Math.floor(rtn.size / 1048576);
+    return rtn;
+}
+
 var Header = React.createClass({
     displayName: 'Header',
 
@@ -10,22 +34,8 @@ var Header = React.createClass({
         this.props.uploadFiles(files);
     },
     render: function () {
-        var { dir, viewing } = this.props;
-        var dir_len = dir.path.length;
-        var viewing_root = dir.path.length === 1;
-        var dir_info_class = classnames('row', {
-            'active': viewing.dir
-        });
-        var dir_size = 0;
-        var file_count = 0;
-        var dir_count = 0;
-        for (var item of dir.contents) {
-            dir_size += item.size;
-            file_count += item.type === 'file' ? 1 : 0;
-            dir_count += item.type === 'dir' ? 1 : 0;
-        }
-        var Kb_size = Math.floor(dir_size / 1024);
-        var Mb_size = Math.floor(dir_size / 1048576);
+        var { nav } = this.props;
+        let meta = contentData(this.props.info);
         return React.createElement(
             'header',
             { className: 'grid' },
@@ -38,13 +48,13 @@ var Header = React.createClass({
                     React.createElement(
                         'li',
                         null,
-                        React.createElement('input', { disabled: viewing_root, onClick: () => this.props.requestFolder(dir.path[dir_len - 2]), type: 'button', value: 'Back' })
+                        React.createElement('input', { disabled: nav.path.length === 0, onClick: () => this.props.request('back', 'dir'), type: 'button', value: 'Back' })
                     ),
                     React.createElement(
                         'li',
                         null,
                         'directory: ',
-                        dir.path[dir_len - 1]
+                        joinPath(nav.path)
                     )
                 )
             ),
@@ -60,7 +70,7 @@ var Header = React.createClass({
             ),
             React.createElement(
                 'section',
-                { id: 'dir-info', className: dir_info_class },
+                { id: 'dir-info', className: 'row' },
                 React.createElement(
                     'ul',
                     { className: 'horizontal' },
@@ -68,23 +78,19 @@ var Header = React.createClass({
                         'li',
                         null,
                         'size: ',
-                        Mb_size,
-                        'MiB, ',
-                        Kb_size,
+                        meta.MiB,
+                        'MiB | ',
+                        meta.KiB,
                         'KiB'
                     ),
-                    React.createElement(
+                    nav.type.dir ? React.createElement(
                         'li',
                         null,
                         'files: ',
-                        file_count
-                    ),
-                    React.createElement(
-                        'li',
-                        null,
-                        'folders: ',
-                        dir_count
-                    )
+                        meta.files,
+                        ', folders: ',
+                        meta.dirs
+                    ) : null
                 )
             )
         );
