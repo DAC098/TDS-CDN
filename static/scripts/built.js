@@ -21536,7 +21536,6 @@
 	    // checks
 	    // ------------------------------------------------------------------------
 	    checkCurrentDir: function (location) {
-	        // FIX ME HERE
 	        let { nav } = this.state;
 	        let check = joinPath(nav.path);
 	        if (check === location) {
