@@ -1,6 +1,5 @@
-# TDS FTP
-this is a custom FTP server using [Nodejs](https://nodejs.org/en/).
-(it started out as a CDN, but then I realized that it is more like an FTP server)
+# TDS CDN
+this is a custom CDN server using [Nodejs](https://nodejs.org/en/).
 
 ### Backend
 - [Express](https://expressjs.com/)
