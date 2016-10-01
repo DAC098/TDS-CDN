@@ -21497,29 +21497,27 @@
 	        let { nav } = this.state;
 	        let session_path = store.get('path'),
 	            session_type = store.get('type');
-	        socket.on('dir-update', self.checkCurrentDir);
+	        socket.on('update', response => self.checkUpdate(response.type, response.path));
 
-	        socket.on('dir-list', data => self.handleData('dir', data));
-	        socket.on('dir-not-found', () => {
-	            console.log('directory not found');
-	            self.request();
+	        socket.on('request-complete', response => self.handleData(response.type, response.data));
+	        socket.on('request-failed', reason => {
+	            console.log('request failed,\ntype:', reason.type, '\nmsg:', reason.msg);
 	        });
 
-	        socket.on('file-data', data => self.handleData('file', data));
-	        socket.on('file-not-found', () => {
-	            console.log('file not found');
-	            self.request();
+	        socket.on('upload-complete', response => {
+	            console.log('upload complete\ntype:', response.type);
+	        });
+	        socket.on('upload-failed', reason => {
+	            console.log('upload failed\ntype:', reason.type, '\nmsg:', reason.msg);
 	        });
 
-	        socket.on('upload-complete', () => console.log('upload complete'));
-	        socket.on('upload-failed', () => console.log('upload failed'));
-	        socket.on('upload-exists', () => console.log('upload exists'));
-
-	        socket.on('remove-complete', () => {
-	            console.log('remove complete');
+	        socket.on('remove-complete', response => {
+	            console.log('remove complete,\ntype:', response.type);
 	            self.request('back');
 	        });
-	        socket.on('remove-failed', () => console.log('remove failed'));
+	        socket.on('remove-failed', reason => {
+	            console.log('remove failed\ntype:', reason.type, '\nmsg:', reason.msg);
+	        });
 
 	        if (session_path && session_type) {
 	            self.request('returned', session_type, splitPath(session_path));
@@ -21535,19 +21533,28 @@
 	    // ------------------------------------------------------------------------
 	    // checks
 	    // ------------------------------------------------------------------------
-	    checkCurrentDir: function (location) {
+	    checkUpdate: function (type, path) {
 	        let { nav } = this.state;
-	        let check = joinPath(nav.path);
-	        if (check === location) {
-	            socket.emit('dir-request', location);
+	        switch (type) {
+	            case 'file':
+
+	                break;
+	            case 'dir':
+	                let check = joinPath(nav.path);
+	                console.log('comparing current:', check, '\nto:', path);
+	                if (check === path) {
+	                    socket.emit('request-dir', path);
+	                }
+	                break;
+	            default:
+
 	        }
 	    },
 	    // ------------------------------------------------------------------------
 	    // navigation
 	    // ------------------------------------------------------------------------
-	    handleData: function (type, returned) {
+	    handleData: function (type, data) {
 	        let { dir, file, nav, request } = this.state;
-	        let { data } = returned;
 	        if (data) {
 	            switch (type) {
 	                case 'dir':
@@ -21600,7 +21607,7 @@
 	            case 'file':
 	                request.type = type;
 	                console.log('requesting file');
-	                socket.emit('file-request', full_path);
+	                socket.emit('request-file', full_path);
 	                break;
 	            case 'dir':
 	                request.type = type;
@@ -21609,7 +21616,7 @@
 	                    this.handleData('dir', { data: true });
 	                } else {
 	                    console.log('requesting dir');
-	                    socket.emit('dir-request', full_path);
+	                    socket.emit('request-dir', full_path);
 	                }
 	                break;
 	            default:
