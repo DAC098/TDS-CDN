@@ -1,11 +1,19 @@
 var React = require('react');
 var {isoDate} = require('../../../lib/misc.js');
+var classnames = require('classnames');
 
 var DirContents = React.createClass({
     renderContents: function() {
         return this.props.dir.map((element,index) => {
+            let item_class = classnames({
+                'selected': this.props.selected.has(index)
+            });
             return (
-                <tr key={index} onClick={() => this.props.request('forward',element.type,element.name)}>
+                <tr key={index}
+                    onClick={() => this.props.selectItem(index,element.url)}
+                    onDoubleClick={() => this.props.request('forward',element.type,element.name)}
+                    className={item_class}
+                >
                     <td>{element.name}</td>
                     <td>{element.type}</td>
                     <td>{element.size}</td>

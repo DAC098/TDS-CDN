@@ -10,6 +10,7 @@ var Header = require('../components/Header.js');
 var App = React.createClass({
     getInitialState: function() {
         return {
+            selected: new Map(),
             dir: [],
             file: {},
             request: {
@@ -87,6 +88,15 @@ var App = React.createClass({
     // ------------------------------------------------------------------------
     // navigation
     // ------------------------------------------------------------------------
+    selectItem: function(key,path) {
+        let {selected} = this.state;
+        if(selected.has(key)) {
+            selected.delete(key);
+        } else {
+            selected.set(key,path);
+        }
+        this.setState({selected});
+    },
     handleData: function(type,data) {
         let {dir,file,nav,request} = this.state;
         if(data) {
@@ -112,7 +122,7 @@ var App = React.createClass({
         }
     },
     request: function(direction,type,path) {
-        let {nav,request,dir} = this.state;
+        let {nav,request,dir,selected} = this.state;
         let go_back = false,
             full_path = '';
         switch (direction) {
@@ -136,6 +146,7 @@ var App = React.createClass({
                 console.log('requesting root directory');
         }
         full_path = joinPath(request.path);
+        selected.clear();
         request.filled = false;
         switch (type) {
             case 'file':
@@ -156,7 +167,7 @@ var App = React.createClass({
             default:
                 console.log('unknown type:',type);
         }
-        this.setState({nav,request});
+        this.setState({nav,request,selected});
     },
     // ------------------------------------------------------------------------
     // uploading content
@@ -176,6 +187,9 @@ var App = React.createClass({
             fr.readAsArrayBuffer(item);
         }
     },
+    uploadDir: function(name) {
+
+    },
     // ------------------------------------------------------------------------
     // removing content
     // ------------------------------------------------------------------------
@@ -193,7 +207,7 @@ var App = React.createClass({
         if(nav.type.file) {
             view = <FileContents file={state.file} removeFile={this.removeFile}/>
         } else {
-            view = <DirContents dir={state.dir} request={this.request} />
+            view = <DirContents dir={state.dir} selected={state.selected} selectItem={this.selectItem} request={this.request} />
         }
         return (
             <main className="grid">
