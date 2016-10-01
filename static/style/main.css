@@ -106,3 +106,6 @@ ul.horizontal li {
   margin: 0 5px;
   display: inline-block;
 }
+.selected {
+  background-color: #333333;
+}

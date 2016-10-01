@@ -21468,14 +21468,15 @@
 	var { joinPath, splitPath } = __webpack_require__(225);
 
 	var DirContents = __webpack_require__(226);
-	var FileContents = __webpack_require__(228);
-	var Header = __webpack_require__(229);
+	var FileContents = __webpack_require__(229);
+	var Header = __webpack_require__(230);
 
 	var App = React.createClass({
 	    displayName: 'App',
 
 	    getInitialState: function () {
 	        return {
+	            selected: new Map(),
 	            dir: [],
 	            file: {},
 	            request: {
@@ -21553,6 +21554,15 @@
 	    // ------------------------------------------------------------------------
 	    // navigation
 	    // ------------------------------------------------------------------------
+	    selectItem: function (key, path) {
+	        let { selected } = this.state;
+	        if (selected.has(key)) {
+	            selected.delete(key);
+	        } else {
+	            selected.set(key, path);
+	        }
+	        this.setState({ selected });
+	    },
 	    handleData: function (type, data) {
 	        let { dir, file, nav, request } = this.state;
 	        if (data) {
@@ -21578,7 +21588,7 @@
 	        }
 	    },
 	    request: function (direction, type, path) {
-	        let { nav, request, dir } = this.state;
+	        let { nav, request, dir, selected } = this.state;
 	        let go_back = false,
 	            full_path = '';
 	        switch (direction) {
@@ -21602,6 +21612,7 @@
 	                console.log('requesting root directory');
 	        }
 	        full_path = joinPath(request.path);
+	        selected.clear();
 	        request.filled = false;
 	        switch (type) {
 	            case 'file':
@@ -21622,7 +21633,7 @@
 	            default:
 	                console.log('unknown type:', type);
 	        }
-	        this.setState({ nav, request });
+	        this.setState({ nav, request, selected });
 	    },
 	    // ------------------------------------------------------------------------
 	    // uploading content
@@ -21642,6 +21653,7 @@
 	            fr.readAsArrayBuffer(item);
 	        }
 	    },
+	    uploadDir: function (name) {},
 	    // ------------------------------------------------------------------------
 	    // removing content
 	    // ------------------------------------------------------------------------
@@ -21659,7 +21671,7 @@
 	        if (nav.type.file) {
 	            view = React.createElement(FileContents, { file: state.file, removeFile: this.removeFile });
 	        } else {
-	            view = React.createElement(DirContents, { dir: state.dir, request: this.request });
+	            view = React.createElement(DirContents, { dir: state.dir, selected: state.selected, selectItem: this.selectItem, request: this.request });
 	        }
 	        return React.createElement(
 	            'main',
@@ -29227,15 +29239,23 @@
 
 	var React = __webpack_require__(1);
 	var { isoDate } = __webpack_require__(227);
+	var classnames = __webpack_require__(228);
 
 	var DirContents = React.createClass({
 	    displayName: 'DirContents',
 
 	    renderContents: function () {
 	        return this.props.dir.map((element, index) => {
+	            let item_class = classnames({
+	                'selected': this.props.selected.has(index)
+	            });
 	            return React.createElement(
 	                'tr',
-	                { key: index, onClick: () => this.props.request('forward', element.type, element.name) },
+	                { key: index,
+	                    onClick: () => this.props.selectItem(index, element.url),
+	                    onDoubleClick: () => this.props.request('forward', element.type, element.name),
+	                    className: item_class
+	                },
 	                React.createElement(
 	                    'td',
 	                    null,
@@ -29307,7 +29327,7 @@
 /* 227 */
 /***/ function(module, exports) {
 
-	function pad(num,places = 1) {
+	exports.pad = function pad(num,places = 1) {
 	    var calc_array = [10,100,1000];
 	    var rtn = `${num}`;
 	    var count = 1
@@ -29336,7 +29356,9 @@
 	    return modify;
 	}
 
-	function padEnd(modify,length,fill = " ") {
+	exports.padStart = padStart;
+
+	exports.padEnd = function padEnd(modify,length,fill = " ") {
 	    modify = (typeof modify !== string) ? String(modify) : modify;
 	    var mod_len = modify.length;
 	    var fill_len = fill.length;
@@ -29350,12 +29372,6 @@
 	    return modify;
 	}
 
-	exports.pad = pad;
-
-	exports.padStart = padStart;
-
-	exports.padEnd = padEnd;
-
 	exports.isoDate = function isoDate(date) {
 	    date = (typeof date === 'string') ? new Date(date) : date;
 	    return `${date.getFullYear()}-${padStart(date.getMonth() + 1,2,'0')}-${padStart(date.getDate(),2,'0')}T${padStart(date.getHours(),2,'0')}:${padStart(date.getMinutes(),2,'0')}:${padStart(date.getSeconds(),2,'0')}.${padStart(date.getMilliseconds(),3,'0')}Z`;
@@ -29364,6 +29380,60 @@
 
 /***/ },
 /* 228 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+	  Copyright (c) 2016 Jed Watson.
+	  Licensed under the MIT License (MIT), see
+	  http://jedwatson.github.io/classnames
+	*/
+	/* global define */
+
+	(function () {
+		'use strict';
+
+		var hasOwn = {}.hasOwnProperty;
+
+		function classNames () {
+			var classes = [];
+
+			for (var i = 0; i < arguments.length; i++) {
+				var arg = arguments[i];
+				if (!arg) continue;
+
+				var argType = typeof arg;
+
+				if (argType === 'string' || argType === 'number') {
+					classes.push(arg);
+				} else if (Array.isArray(arg)) {
+					classes.push(classNames.apply(null, arg));
+				} else if (argType === 'object') {
+					for (var key in arg) {
+						if (hasOwn.call(arg, key) && arg[key]) {
+							classes.push(key);
+						}
+					}
+				}
+			}
+
+			return classes.join(' ');
+		}
+
+		if (typeof module !== 'undefined' && module.exports) {
+			module.exports = classNames;
+		} else if (true) {
+			// register as 'classnames', consistent with npm package name
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+				return classNames;
+			}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+		} else {
+			window.classNames = classNames;
+		}
+	}());
+
+
+/***/ },
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
@@ -29434,11 +29504,11 @@
 	module.exports = FileContents;
 
 /***/ },
-/* 229 */
+/* 230 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var classnames = __webpack_require__(230);
+	var classnames = __webpack_require__(228);
 
 	var { joinPath } = __webpack_require__(225);
 
@@ -29537,60 +29607,6 @@
 	});
 
 	module.exports = Header;
-
-/***/ },
-/* 230 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	  Copyright (c) 2016 Jed Watson.
-	  Licensed under the MIT License (MIT), see
-	  http://jedwatson.github.io/classnames
-	*/
-	/* global define */
-
-	(function () {
-		'use strict';
-
-		var hasOwn = {}.hasOwnProperty;
-
-		function classNames () {
-			var classes = [];
-
-			for (var i = 0; i < arguments.length; i++) {
-				var arg = arguments[i];
-				if (!arg) continue;
-
-				var argType = typeof arg;
-
-				if (argType === 'string' || argType === 'number') {
-					classes.push(arg);
-				} else if (Array.isArray(arg)) {
-					classes.push(classNames.apply(null, arg));
-				} else if (argType === 'object') {
-					for (var key in arg) {
-						if (hasOwn.call(arg, key) && arg[key]) {
-							classes.push(key);
-						}
-					}
-				}
-			}
-
-			return classes.join(' ');
-		}
-
-		if (typeof module !== 'undefined' && module.exports) {
-			module.exports = classNames;
-		} else if (true) {
-			// register as 'classnames', consistent with npm package name
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
-				return classNames;
-			}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-		} else {
-			window.classNames = classNames;
-		}
-	}());
-
 
 /***/ }
 /******/ ]);
