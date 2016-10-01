@@ -1,0 +1,90 @@
+server events
+
+- update:
+    emitted when a file or directory has been updated either by an action done
+    outside the server or by another client
+    return:
+        type: [string] the type of update made, eg 'file' or 'dir'
+        location: [string] the location of the file or directory modified
+
+- alert: (may be implemented)
+    emitted when there is an alert from the server, notifications
+
+request events
+
+- request-dir:
+    is emitted by the client that is requesting a specified directory
+    args:
+        dir_path: [string] the path the client is requesting
+
+- request-file:
+    is emitted by the client that is requesting a specified file
+    args:
+        file_path: [string] the path the client is requesting
+
+- request-complete:
+    is emmitted by the server when a request for the specific client has been
+    filled
+    return:
+        type: [string] the type of request made, eg 'file' or 'dir'
+        data: [object/array] the information to be sent back to the client, the
+            information of the file or an array of the directory contents
+
+- request-failed:
+    is emitted by the server when there was an error during the request given
+    by the client
+    return:
+        type: [string] the type of request made, eg 'file' or 'dir'
+        msg: [string] the reason for the failed request, ex 'file exists' 'unable to create dir'
+
+upload events
+
+- upload-file:
+    emitted by the client when requesting to upload a file to the server
+    args:
+        info.location: [string] the location of the file to be created
+        info.name: [string] the name of the file to be created
+        info.data: [buffer] the buffered data of the file
+
+- upload-dir:
+    emitted by the client when requesting to create a new directory on the server
+    args:
+        info.location: [string] the path of the directory to be placed in
+        info.name: [string] the name of the directory to create
+
+- upload-complete:
+    emitted by the server when the specified upload is complete
+    return:
+        type: [string] the type of upload made, eg 'file' or 'dir'
+
+- upload-failed:
+    emitted by the server when the specified upload failed
+    return:
+        type: [string] the type of upload made, eg 'file' or 'dir'
+        msg: [string] the message to be sent back to the client
+
+remove events
+
+- remove-file:
+    emitted by the client when requesting a removal of a file from the server
+    args:
+        location: [string] the path of the file to remove
+
+- remove-dir:
+    emitted by the client when requesting the removal of a directory from the
+    server
+    args:
+        location: [string] the path of the directory to remove
+        force: [bool] tells the server to either delete all the contents of a
+            directory or to wait until specification from the client
+
+- remove-complete:
+    emitted by the server when a remove request has been filled
+    return:
+        type: [string] the type of request made, eg 'file' or 'dir'
+
+- remove-failed:
+    emitted by the server when a remove request failed
+    return:
+        type: [string] the type of request made, eg 'file' or 'dir'
+        msg: [string] the message to be sent back to the client
