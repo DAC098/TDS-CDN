@@ -10,6 +10,8 @@ var app = express();
 
 app.use(express.static('./static'));
 
+app.use(express.static('./assets'));
+
 app.use('/',fs_router);
 
 app.use('/cdn',cdn_router);
