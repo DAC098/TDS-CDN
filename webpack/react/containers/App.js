@@ -249,7 +249,7 @@ var App = React.createClass({
             { className: 'grid' },
             React.createElement(
                 'header',
-                { className: 'row grid' },
+                { id: 'tool-area', className: 'grid' },
                 React.createElement(UploadBar, { upload: state.upload,
                     uploadFile: this.uploadFile, uploadDir: this.uploadDir,
                     setUploadState: this.setUploadState
@@ -259,9 +259,10 @@ var App = React.createClass({
                 }),
                 React.createElement(ItemInfo, { nav: state.nav, info: state.nav.type.file ? state.content.file : state.content.dir })
             ),
+            React.createElement('div', { id: 'header-pad', className: 'row' }),
             React.createElement(
                 'section',
-                { id: 'content-area', className: 'scroll-area' },
+                { id: 'content-area', className: 'row scroll-area' },
                 view
             )
         );
