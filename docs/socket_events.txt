@@ -5,33 +5,34 @@ server events
     outside the server or by another client
     return:
         type: [string] the type of update made, eg 'file' or 'dir'
-        location: [string] the location of the file or directory modified
+        path: [string] the location of the file or directory modified
+        opp: [string] the operation that was used for the update
 
 - alert: (may be implemented)
     emitted when there is an alert from the server, notifications
 
 request events
 
-- request-dir:
-    is emitted by the client that is requesting a specified directory
+- fetch-dir:
+    is emitted by the client that is fetching a specified directory
     args:
         dir_path: [string] the path the client is requesting
 
-- request-file:
-    is emitted by the client that is requesting a specified file
+- fetch-file:
+    is emitted by the client that is fetching a specified file
     args:
         file_path: [string] the path the client is requesting
 
-- request-complete:
-    is emmitted by the server when a request for the specific client has been
+- fetch-complete:
+    is emmitted by the server when a fetch for the specific client has been
     filled
     return:
         type: [string] the type of request made, eg 'file' or 'dir'
         data: [object/array] the information to be sent back to the client, the
             information of the file or an array of the directory contents
 
-- request-failed:
-    is emitted by the server when there was an error during the request given
+- fetch-failed:
+    is emitted by the server when there was an error during the fetch given
     by the client
     return:
         type: [string] the type of request made, eg 'file' or 'dir'
