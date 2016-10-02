@@ -1,5 +1,3 @@
-"use strict"
-
 var React = require('react');
 var socket = require('../../socket.js');
 var store = require('../../Store.js');
