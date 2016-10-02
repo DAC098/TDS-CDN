@@ -26,10 +26,19 @@ function contentData(content) {
 }
 
 var Header = React.createClass({
-    handleUpload: function(event) {
-        var files = this.refs.file.files;
-        //console.log('file input:',this.refs.file);
-        this.props.uploadFiles(files);
+    handleChange: function(key) {
+        switch (key) {
+            case 'dir':
+                this.props.setUploadState(key,this.refs[key].value);
+                break;
+            case 'files':
+                let files = this.refs[key].files;
+                console.log('files:',files);
+                this.props.setUploadState(key,files);
+                break;
+            default:
+
+        }
     },
     render: function() {
         var {nav} = this.props;
@@ -38,15 +47,19 @@ var Header = React.createClass({
             <header className='grid'>
                 <section className='col-6'>
                     <ul className="horizontal">
-                        <li><input onClick={() => this.props.request('refresh')} type='button' value='refresh' /></li>
-                        <li><input disabled={nav.path.length === 0} onClick={() => this.props.request('back','dir')} type='button' value='Back' /></li>
+                        <li><input onClick={() => this.props.fetchDirection('refresh')} type='button' value='refresh' /></li>
+                        <li><input disabled={nav.path.length === 0} onClick={() => this.props.fetchDirection('previous')} type='button' value='Back' /></li>
                         <li>directory: {joinPath(nav.path)}</li>
                     </ul>
                 </section>
                 <section className='col-6'>
                     <form>
-                        <input type='file' ref='file' multiple/>
-                        <input type='button' onClick={this.handleUpload} value='upload'/>
+                        <input type='file' ref='files' multiple onChange={() => this.handleChange('files')} />
+                        <input type='button' onClick={() => this.props.uploadFiles()} value='upload'/>
+                    </form>
+                    <form>
+                        <input type='text' ref='dir' onChange={() => this.handleChange('dir')} value={this.props.upload.dir} />
+                        <input type='button' onClick={() => this.props.uploadDir()} value='create'/>
                     </form>
                 </section>
                 <section id='dir-info' className='row'>
