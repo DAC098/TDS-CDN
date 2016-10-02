@@ -26,6 +26,10 @@ var App = React.createClass({
                     file: false,
                     dir: false,
                 }
+            },
+            uploads: {
+                files: [],
+                dir: '',
             }
         }
     },
