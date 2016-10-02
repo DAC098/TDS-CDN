@@ -32,9 +32,15 @@ var App = React.createClass({
         let {nav} = this.state;
         let session_path = store.get('path'),
             session_type = store.get('type');
-        socket.on('update',(response) => self.checkUpdate(response.type,response.path));
+        socket.on('update',(response) => {
+            console.log('update from server\ntype:',response.type,'\npath:',response.path);
+            self.checkUpdate(response.type,response.path);
+        });
 
-        socket.on('request-complete',(response) => self.handleData(response.type,response.data));
+        socket.on('request-complete',(response) => {
+            console.log('response complete\ntype:',response.type);
+            self.handleData(response.type,response.data);
+        });
         socket.on('request-failed',(reason) => {
             console.log('request failed,\ntype:',reason.type,'\nmsg:',reason.msg);
         });
@@ -139,6 +145,10 @@ var App = React.createClass({
             case 'returned':
                 console.log('returning to saved nav');
                 request.path = path;
+                break;
+            case 'refresh':
+                console.log('refreshing current location');
+                type = request.type;
                 break;
             default:
                 type = 'dir';

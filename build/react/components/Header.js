@@ -38,6 +38,7 @@ var Header = React.createClass({
             <header className='grid'>
                 <section className='col-6'>
                     <ul className="horizontal">
+                        <li><input onClick={() => this.props.request('refresh')} type='button' value='refresh' /></li>
                         <li><input disabled={nav.path.length === 0} onClick={() => this.props.request('back','dir')} type='button' value='Back' /></li>
                         <li>directory: {joinPath(nav.path)}</li>
                     </ul>
