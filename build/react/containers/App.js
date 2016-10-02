@@ -246,7 +246,7 @@ var App = React.createClass({
         }
         return (
             <main className="grid">
-                <header className='row grid'>
+                <header id="tool-area" className='grid'>
                     <UploadBar upload={state.upload}
                         uploadFile={this.uploadFile} uploadDir={this.uploadDir}
                         setUploadState={this.setUploadState}
@@ -256,7 +256,8 @@ var App = React.createClass({
                     />
                     <ItemInfo nav={state.nav} info={(state.nav.type.file) ? state.content.file : state.content.dir} />
                 </header>
-                <section id='content-area' className='scroll-area'>
+                <div id='header-pad' className='row' />
+                <section id='content-area' className='row scroll-area'>
                     {view}
                 </section>
             </main>
