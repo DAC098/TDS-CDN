@@ -18,12 +18,12 @@ const dir = {
     less: {
         src: './build/less/main.less',
         imp: './build/less/imports/**/*.less',
-        out: './static/style'
+        out: './compiled/style'
     },
     webpack: {
         src: './webpack/main.js',
         imp: './webpack/*.js',
-        out: './static/scripts'
+        out: './compiled/scripts'
     }
 }
 

@@ -8,7 +8,7 @@ const {connect} = require('./lib/socket.js');
 
 var app = express();
 
-app.use(express.static('./static'));
+app.use(express.static('./compiled'));
 
 app.use(express.static('./assets'));
 
