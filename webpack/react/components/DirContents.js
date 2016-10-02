@@ -14,7 +14,7 @@ var DirContents = React.createClass({
                 'tr',
                 { key: index,
                     onClick: () => this.props.selectItem(index, element.url),
-                    onDoubleClick: () => this.props.request('forward', element.type, element.name),
+                    onDoubleClick: () => this.props.fetch(element.type, element.url),
                     className: item_class
                 },
                 React.createElement(

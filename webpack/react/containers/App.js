@@ -1,3 +1,5 @@
+"use strict";
+
 var React = require('react');
 var socket = require('../../socket.js');
 var store = require('../../Store.js');
@@ -7,18 +9,24 @@ var DirContents = require('../components/DirContents.js');
 var FileContents = require('../components/FileContents.js');
 var Header = require('../components/Header.js');
 
+var log = require('../../CLogs.js').makeLogger('App');
+
+var request_tmp = false;
+
 var App = React.createClass({
     displayName: 'App',
 
     getInitialState: function () {
         return {
             selected: new Map(),
-            dir: [],
-            file: {},
+            content: {
+                dir: [],
+                file: {}
+            },
             request: {
                 type: '',
-                path: [],
-                filled: false
+                opp: '',
+                path: ''
             },
             nav: {
                 path: [],
@@ -26,6 +34,10 @@ var App = React.createClass({
                     file: false,
                     dir: false
                 }
+            },
+            upload: {
+                files: [],
+                dir: ''
             }
         };
     },
@@ -34,62 +46,76 @@ var App = React.createClass({
         let { nav } = this.state;
         let session_path = store.get('path'),
             session_type = store.get('type');
-        socket.on('update', response => self.checkUpdate(response.type, response.path));
+        socket.on('update', response => {
+            log('update from server\nresponse:', response);
+            self.checkUpdate(response);
+        });
 
-        socket.on('request-complete', response => self.handleData(response.type, response.data));
-        socket.on('request-failed', reason => {
-            console.log('request failed,\ntype:', reason.type, '\nmsg:', reason.msg);
+        socket.on('fetch-complete', response => {
+            log('fetch complete\ntype:', response.type);
+            self.fetchResponse(response);
+        });
+        socket.on('fetch-failed', reason => {
+            log('fetch failed,\ntype:', reason.type, '\nmsg:', reason.msg);
         });
 
         socket.on('upload-complete', response => {
-            console.log('upload complete\ntype:', response.type);
+            log('upload complete\ntype:', response.type);
         });
         socket.on('upload-failed', reason => {
-            console.log('upload failed\ntype:', reason.type, '\nmsg:', reason.msg);
+            log('upload failed\ntype:', reason.type, '\nmsg:', reason.msg);
         });
 
         socket.on('remove-complete', response => {
-            console.log('remove complete,\ntype:', response.type);
-            self.request('back');
+            log('remove complete,\ntype:', response.type);
+            self.fetchDirection('previous');
         });
         socket.on('remove-failed', reason => {
-            console.log('remove failed\ntype:', reason.type, '\nmsg:', reason.msg);
+            log('remove failed\ntype:', reason.type, '\nmsg:', reason.msg);
         });
 
         if (session_path && session_type) {
-            self.request('returned', session_type, splitPath(session_path));
+            self.fetch(session_type, session_path);
         } else {
-            self.request();
+            self.fetchDirection('root');
         }
     },
     componentWillUnmount: function () {
-        var self = this;
         socket.removeAllListeners();
         store.clear();
     },
+    componentWillUpdate: function (props, state) {},
     // ------------------------------------------------------------------------
     // checks
     // ------------------------------------------------------------------------
-    checkUpdate: function (type, path) {
+    checkUpdate: function (response) {
         let { nav } = this.state;
-        switch (type) {
-            case 'file':
-
-                break;
-            case 'dir':
-                let check = joinPath(nav.path);
-                console.log('comparing current:', check, '\nto:', path);
-                if (check === path) {
-                    socket.emit('request-dir', path);
-                }
+        let check = joinPath(nav.path),
+            request_path = '',
+            againts = '';
+        switch (response.opp) {
+            case 'remove':
+                request_path = splitPath(response.path);
+                request_path.pop();
+                against = joinPath(request_path);
                 break;
             default:
-
+                against = response.path;
+        }
+        log('comparing current:', check, '\nto:', against);
+        if (check === against) {
+            this.fetch(request.type, against);
         }
     },
     // ------------------------------------------------------------------------
-    // navigation
+    // state methods
     // ------------------------------------------------------------------------
+    setUploadState: function (key, value) {
+        let { upload } = this.state;
+        upload[key] = value;
+        // log('upload state:',upload);
+        this.setState({ upload });
+    },
     selectItem: function (key, path) {
         let { selected } = this.state;
         if (selected.has(key)) {
@@ -99,85 +125,90 @@ var App = React.createClass({
         }
         this.setState({ selected });
     },
-    handleData: function (type, data) {
-        let { dir, file, nav, request } = this.state;
-        if (data) {
-            switch (type) {
-                case 'dir':
-                    dir = Array.isArray(data) ? data : dir;
-                    nav.type.dir = true;
-                    nav.type.file = false;
-                    break;
-                case 'file':
-                    file = data;
-                    nav.type.dir = false;
-                    nav.type.file = true;
-                    break;
-            }
-            nav.path = request.path;
-            request.filled = true;
-            store.set('type', type);
-            store.set('path', joinPath(nav.path));
-            this.setState({ dir, file, nav, request });
-        } else {
-            console.log('no data returned from request');
-        }
-    },
-    request: function (direction, type, path) {
-        let { nav, request, dir, selected } = this.state;
-        let go_back = false,
-            full_path = '';
-        switch (direction) {
-            case 'forward':
-                console.log('going down directory');
-                request.path.push(path);
-                break;
-            case 'back':
-                console.log('going up direcotory');
-                request.path.pop();
-                type = 'dir';
-                go_back = true;
-                break;
-            case 'returned':
-                console.log('returning to saved nav');
-                request.path = path;
-                break;
-            default:
-                type = 'dir';
-                request.path = [];
-                console.log('requesting root directory');
-        }
-        full_path = joinPath(request.path);
+    clearSelected: function () {
+        let { selected } = this.state;
         selected.clear();
-        request.filled = false;
+        this.setState({ selected });
+    },
+    setRequest: function (opp, type, path) {
+        let { request } = this.state;
+        request.opp = opp;
+        request.type = type;
+        request.path = path;
+        this.setState({ request });
+    },
+    setNav: function (is_file, path) {
+        let { nav } = this.state;
+        nav.path = splitPath(path);
+        nav.type.file = is_file;
+        nav.type.dir = !nav.type.file;
+        this.setState({ nav });
+    },
+    // ------------------------------------------------------------------------
+    // fetch content
+    // ------------------------------------------------------------------------
+    fetch: function (type, path) {
+        log('fetching:', type, '\npath:', path);
         switch (type) {
             case 'file':
-                request.type = type;
-                console.log('requesting file');
-                socket.emit('request-file', full_path);
+                socket.emit('fetch-file', path);
                 break;
             case 'dir':
-                request.type = type;
-                if (go_back && nav.type.file && dir.length !== 0) {
-                    console.log('returning to stored dir');
-                    this.handleData('dir', { data: true });
-                } else {
-                    console.log('requesting dir');
-                    socket.emit('request-dir', full_path);
-                }
+                socket.emit('fetch-dir', path);
                 break;
-            default:
-                console.log('unknown type:', type);
         }
-        this.setState({ nav, request, selected });
+        this.setRequest('fetch', type, path);
+    },
+    fetchDirection: function (direction, type, path) {
+        let { nav, request } = this.state;
+        let curr_path = Array.from(nav.path);
+        switch (direction) {
+            case 'next':
+                curr_path.push(path);
+                path = joinPath(curr_path);
+                break;
+            case 'previous':
+                curr_path.pop();
+                path = joinPath(curr_path);
+                type = 'dir';
+                break;
+            case 'refresh':
+                type = request.type;
+                path = request.path;
+                break;
+            case 'root':
+                type = 'dir';
+                path = '/';
+                break;
+        }
+        this.fetch(type, path);
+    },
+    fetchResponse: function (response) {
+        let { request, content } = this.state;
+        let is_file = false;
+        switch (request.type) {
+            case 'file':
+                content.file = response.data;
+                is_file = true;
+                break;
+            case 'dir':
+                content.dir = response.data;
+                break;
+        }
+        store.set('type', request.type);
+        store.set('path', request.path);
+        this.clearSelected();
+        this.setNav(is_file, request.path);
+        this.setState({ content });
     },
     // ------------------------------------------------------------------------
     // uploading content
     // ------------------------------------------------------------------------
-    uploadFiles: function (files) {
-        let { nav } = this.state;
+    uploadFiles: function () {
+        let { nav, upload } = this.state;
+        let files = upload.files;
         for (let item of files) {
-            console.log('file:', item);
+            log('file:', item);
             let fr = new FileReader();
             fr.addEventListener('loadend', () => {
                 socket.emit('upload-file', {
@@ -189,7 +220,11 @@ var App = React.createClass({
             fr.readAsArrayBuffer(item);
         }
     },
-    uploadDir: function (name) {},
+    uploadDir: function () {
+        let { nav, upload } = this.state;
+        let location = joinPath(nav.path);
+        socket.emit('upload-dir', { name: upload.dir, location });
+    },
     // ------------------------------------------------------------------------
     // removing content
     // ------------------------------------------------------------------------
@@ -205,14 +240,20 @@ var App = React.createClass({
         let { nav } = state;
         let view = undefined;
         if (nav.type.file) {
-            view = React.createElement(FileContents, { file: state.file, removeFile: this.removeFile });
+            view = React.createElement(FileContents, { file: state.content.file, removeFile: this.removeFile });
         } else {
-            view = React.createElement(DirContents, { dir: state.dir, selected: state.selected, selectItem: this.selectItem, request: this.request });
+            view = React.createElement(DirContents, { dir: state.content.dir, selected: state.selected, selectItem: this.selectItem,
+                fetch: this.fetch
+            });
         }
         return React.createElement(
             'main',
             { className: 'grid' },
-            React.createElement(Header, { nav: nav, info: nav.type.file ? state.file : state.dir, request: this.request, uploadFiles: this.uploadFiles }),
+            React.createElement(Header, { nav: nav, info: nav.type.file ? state.content.file : state.content.dir, upload: state.upload,
+                fetch: this.fetch, fetchDirection: this.fetchDirection,
+                uploadFiles: this.uploadFiles, uploadDir: this.uploadDir,
+                setUploadState: this.setUploadState
+            }),
             view
         );
     }

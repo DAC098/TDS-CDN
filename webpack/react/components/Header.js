@@ -28,10 +28,19 @@ function contentData(content) {
 var Header = React.createClass({
     displayName: 'Header',
 
-    handleUpload: function (event) {
-        var files = this.refs.file.files;
-        //console.log('file input:',this.refs.file);
-        this.props.uploadFiles(files);
+    handleChange: function (key) {
+        switch (key) {
+            case 'dir':
+                this.props.setUploadState(key, this.refs[key].value);
+                break;
+            case 'files':
+                let files = this.refs[key].files;
+                console.log('files:', files);
+                this.props.setUploadState(key, files);
+                break;
+            default:
+
+        }
     },
     render: function () {
         var { nav } = this.props;
@@ -48,7 +57,12 @@ var Header = React.createClass({
                     React.createElement(
                         'li',
                         null,
-                        React.createElement('input', { disabled: nav.path.length === 0, onClick: () => this.props.request('back', 'dir'), type: 'button', value: 'Back' })
+                        React.createElement('input', { onClick: () => this.props.fetchDirection('refresh'), type: 'button', value: 'refresh' })
+                    ),
+                    React.createElement(
+                        'li',
+                        null,
+                        React.createElement('input', { disabled: nav.path.length === 0, onClick: () => this.props.fetchDirection('previous'), type: 'button', value: 'Back' })
                     ),
                     React.createElement(
                         'li',
@@ -64,8 +78,14 @@ var Header = React.createClass({
                 React.createElement(
                     'form',
                     null,
-                    React.createElement('input', { type: 'file', ref: 'file' }),
-                    React.createElement('input', { type: 'button', onClick: this.handleUpload, value: 'upload' })
+                    React.createElement('input', { type: 'file', ref: 'files', multiple: true, onChange: () => this.handleChange('files') }),
+                    React.createElement('input', { type: 'button', onClick: () => this.props.uploadFiles(), value: 'upload' })
+                ),
+                React.createElement(
+                    'form',
+                    null,
+                    React.createElement('input', { type: 'text', ref: 'dir', onChange: () => this.handleChange('dir'), value: this.props.upload.dir }),
+                    React.createElement('input', { type: 'button', onClick: () => this.props.uploadDir(), value: 'create' })
                 )
             ),
             React.createElement(
