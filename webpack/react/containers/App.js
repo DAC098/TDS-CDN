@@ -1,5 +1,3 @@
-"use strict";
-
 var React = require('react');
 var socket = require('../../socket.js');
 var store = require('../../Store.js');
@@ -7,11 +5,11 @@ var { joinPath, splitPath } = require('../../misc.js');
 
 var DirContents = require('../components/DirContents.js');
 var FileContents = require('../components/FileContents.js');
-var Header = require('../components/Header.js');
+var NavBar = require('../components/NavBar.js');
+var ItemInfo = require('../components/ItemInfo.js');
+var UploadBar = require('../components/UploadBar.js');
 
 var log = require('../../CLogs.js').makeLogger('App');
-
-var request_tmp = false;
 
 var App = React.createClass({
     displayName: 'App',
@@ -249,12 +247,23 @@ var App = React.createClass({
         return React.createElement(
             'main',
             { className: 'grid' },
-            React.createElement(Header, { nav: nav, info: nav.type.file ? state.content.file : state.content.dir, upload: state.upload,
-                fetch: this.fetch, fetchDirection: this.fetchDirection,
-                uploadFiles: this.uploadFiles, uploadDir: this.uploadDir,
-                setUploadState: this.setUploadState
-            }),
-            view
+            React.createElement(
+                'header',
+                { className: 'row grid' },
+                React.createElement(UploadBar, { upload: state.upload,
+                    uploadFile: this.uploadFile, uploadDir: this.uploadDir,
+                    setUploadState: this.setUploadState
+                }),
+                React.createElement(NavBar, { nav: state.nav,
+                    fetchDirection: this.fetchDirection
+                }),
+                React.createElement(ItemInfo, { nav: state.nav, info: state.nav.type.file ? state.content.file : state.content.dir })
+            ),
+            React.createElement(
+                'section',
+                { id: 'content-area', className: 'scroll-area' },
+                view
+            )
         );
     }
 });
