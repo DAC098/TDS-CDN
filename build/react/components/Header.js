@@ -45,8 +45,8 @@ var Header = React.createClass({
                 </section>
                 <section className='col-6'>
                     <form>
-                        <input type='file' ref='file' />
-                        <input type='button' onClick={this.handleUpload} value='upload' />
+                        <input type='file' ref='file' multiple/>
+                        <input type='button' onClick={this.handleUpload} value='upload'/>
                     </form>
                 </section>
                 <section id='dir-info' className='row'>
