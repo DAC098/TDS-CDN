@@ -7,6 +7,8 @@ var DirContents = require('../components/DirContents.js');
 var FileContents = require('../components/FileContents.js');
 var Header = require('../components/Header.js');
 
+var log = require('../../CLogs.js').makeLogger('App');
+
 var App = React.createClass({
     getInitialState: function() {
         return {
@@ -33,31 +35,31 @@ var App = React.createClass({
         let session_path = store.get('path'),
             session_type = store.get('type');
         socket.on('update',(response) => {
-            console.log('update from server\ntype:',response.type,'\npath:',response.path);
+            log('update from server\ntype:',response.type,'\npath:',response.path);
             self.checkUpdate(response.type,response.path);
         });
 
         socket.on('request-complete',(response) => {
-            console.log('response complete\ntype:',response.type);
+            log('response complete\ntype:',response.type);
             self.handleData(response.type,response.data);
         });
         socket.on('request-failed',(reason) => {
-            console.log('request failed,\ntype:',reason.type,'\nmsg:',reason.msg);
+            log('request failed,\ntype:',reason.type,'\nmsg:',reason.msg);
         });
 
         socket.on('upload-complete',(response) => {
-            console.log('upload complete\ntype:',response.type);
+            log('upload complete\ntype:',response.type);
         });
         socket.on('upload-failed',(reason) => {
-            console.log('upload failed\ntype:',reason.type,'\nmsg:',reason.msg);
+            log('upload failed\ntype:',reason.type,'\nmsg:',reason.msg);
         });
 
         socket.on('remove-complete',(response) => {
-            console.log('remove complete,\ntype:',response.type);
+            log('remove complete,\ntype:',response.type);
             self.request('back');
         });
         socket.on('remove-failed',(reason) => {
-            console.log('remove failed\ntype:',reason.type,'\nmsg:',reason.msg);
+            log('remove failed\ntype:',reason.type,'\nmsg:',reason.msg);
         });
 
         if(session_path && session_type) {
@@ -77,7 +79,7 @@ var App = React.createClass({
     checkUpdate: function(type,path) {
         let {nav} = this.state;
         let check = joinPath(nav.path);
-        console.log('comparing current:',check,'\nto:',path);
+        log('comparing current:',check,'\nto:',path);
         if(check) {
             switch (type) {
                 case 'file':
@@ -124,7 +126,7 @@ var App = React.createClass({
             store.set('path',joinPath(nav.path));
             this.setState({dir,file,nav,request});
         } else {
-            console.log('no data returned from request');
+            log('no data returned from request');
         }
     },
     request: function(direction,type,path) {
@@ -133,27 +135,27 @@ var App = React.createClass({
             full_path = '';
         switch (direction) {
             case 'forward':
-                console.log('going down directory');
+                log('going down directory');
                 request.path.push(path);
                 break;
             case 'back':
-                console.log('going up direcotory');
+                log('going up direcotory');
                 request.path.pop();
                 type = 'dir';
                 go_back = true;
                 break;
             case 'returned':
-                console.log('returning to saved nav');
+                log('returning to saved nav');
                 request.path = path;
                 break;
             case 'refresh':
-                console.log('refreshing current location');
+                log('refreshing current location');
                 type = request.type;
                 break;
             default:
+                log('requesting root directory');
                 type = 'dir';
                 request.path = [];
-                console.log('requesting root directory');
         }
         full_path = joinPath(request.path);
         selected.clear();
@@ -161,21 +163,21 @@ var App = React.createClass({
         switch (type) {
             case 'file':
                 request.type = type;
-                console.log('requesting file');
+                log('requesting file');
                 socket.emit('request-file',full_path);
                 break;
             case 'dir':
                 request.type = type;
                 if(go_back && nav.type.file && dir.length !== 0) {
-                    console.log('returning to stored dir');
+                    log('returning to stored dir');
                     this.handleData('dir',{data: true});
                 } else {
-                    console.log('requesting dir');
+                    log('requesting dir');
                     socket.emit('request-dir',full_path);
                 }
                 break;
             default:
-                console.log('unknown type:',type);
+                log('unknown type:',type);
         }
         this.setState({nav,request,selected});
     },
@@ -185,7 +187,7 @@ var App = React.createClass({
     uploadFiles: function(files) {
         let {nav} = this.state;
         for(let item of files) {
-            console.log('file:',item);
+            log('file:',item);
             let fr = new FileReader();
             fr.addEventListener('loadend',() => {
                 socket.emit('upload-file',({
