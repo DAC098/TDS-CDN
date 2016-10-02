@@ -76,19 +76,19 @@ var App = React.createClass({
     // ------------------------------------------------------------------------
     checkUpdate: function(type,path) {
         let {nav} = this.state;
-        switch (type) {
-            case 'file':
-
-                break;
-            case 'dir':
-                let check = joinPath(nav.path);
-                console.log('comparing current:',check,'\nto:',path);
-                if(check === path) {
+        let check = joinPath(nav.path);
+        console.log('comparing current:',check,'\nto:',path);
+        if(check) {
+            switch (type) {
+                case 'file':
+                    socket.emit('request-file',path);
+                    break;
+                case 'dir':
                     socket.emit('request-dir',path);
-                }
-                break;
-            default:
+                    break;
+                default:
 
+            }
         }
     },
     // ------------------------------------------------------------------------
