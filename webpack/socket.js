@@ -1,3 +1,8 @@
+var regex = /(http?s\:\/\/.*)\/.*/g;
+var result = regex.exec(window.location);
+var address = result[1];
+console.log('result from regex:',address);
+
 var socket = require('socket.io-client')('http://127.0.0.1:3050');
 var log = require('./CLogs.js').makeLogger('socket');
 
