@@ -4,7 +4,7 @@ const https = require('https');
 const fs = require('fs');
 const crypto = require('crypto');
 
-const logging = require('./logging.js');
+const logging = require('./lib/logging.js');
 const log = logging.makeLogger('server');
 const cdn_router = require('./lib/routers/cdn.js');
 const fs_router = require('./lib/routers/fs.js');
