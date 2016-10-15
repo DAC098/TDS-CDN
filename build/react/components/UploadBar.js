@@ -1,12 +1,23 @@
 var React = require('react');
 
+var self = null;
+
 var UploadBar = React.createClass({
+    componentDidMount: function() {
+        self = this;
+    },
+    statics: {
+        clearFiles: function() {
+            console.log('clearing files');
+            self.refs['file'].value = '';
+        }
+    },
     handleChange: function(key) {
         switch (key) {
             case 'dir':
                 this.props.setUploadState(key,this.refs[key].value);
                 break;
-            case 'files':
+            case 'file':
                 let files = this.refs[key].files;
                 console.log('files:',files);
                 this.props.setUploadState(key,files);
@@ -19,7 +30,7 @@ var UploadBar = React.createClass({
         return (
             <section className='row'>
                 <form>
-                    <input type='file' ref='files' multiple onChange={() => this.handleChange('files')} />
+                    <input type='file' ref='file' multiple onChange={() => this.handleChange('file')} />
                     <input type='button' onClick={() => this.props.uploadFiles()} value='upload'/>
                 </form>
                 <form>
