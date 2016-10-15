@@ -6,4 +6,4 @@ logs
 
 compiled
 
-webpack/react
+webpack/react/*
