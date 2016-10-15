@@ -34,7 +34,7 @@ var App = React.createClass({
                 }
             },
             upload: {
-                files: [],
+                file: [],
                 dir: ''
             }
         };
@@ -49,27 +49,24 @@ var App = React.createClass({
             self.checkUpdate(response);
         });
 
-        socket.on('fetch-complete', response => {
-            log('fetch complete\ntype:', response.type);
-            self.fetchResponse(response);
-        });
-        socket.on('fetch-failed', reason => {
-            log('fetch failed,\ntype:', reason.type, '\nmsg:', reason.msg);
+        socket.on('opp-complete', response => {
+            log(response.opp, 'completed\ntype:', response.type);
+            switch (response.opp) {
+                case 'fetch':
+                    self.fetchResponse(response);
+                    break;
+                case 'remove':
+                    self.fetchDirection('previous');
+                    break;
+                case 'upload':
+                    self.setUploadState(response.type);
+                    UploadBar.clearFiles();
+                    break;
+            }
         });
 
-        socket.on('upload-complete', response => {
-            log('upload complete\ntype:', response.type);
-        });
-        socket.on('upload-failed', reason => {
-            log('upload failed\ntype:', reason.type, '\nmsg:', reason.msg);
-        });
-
-        socket.on('remove-complete', response => {
-            log('remove complete,\ntype:', response.type);
-            self.fetchDirection('previous');
-        });
-        socket.on('remove-failed', reason => {
-            log('remove failed\ntype:', reason.type, '\nmsg:', reason.msg);
+        socket.on('opp-failed', reason => {
+            log(reason.opp, 'failed\ntype:', reason.type, '\nmsg:', reason.msg);
         });
 
         if (session_path && session_type) {
@@ -87,7 +84,7 @@ var App = React.createClass({
     // checks
     // ------------------------------------------------------------------------
     checkUpdate: function (response) {
-        let { nav } = this.state;
+        let { nav, request } = this.state;
         let check = joinPath(nav.path),
             request_path = '',
             againts = '';
@@ -111,7 +108,6 @@ var App = React.createClass({
     setUploadState: function (key, value) {
         let { upload } = this.state;
         upload[key] = value;
-        // log('upload state:',upload);
         this.setState({ upload });
     },
     selectItem: function (key, path) {
@@ -204,7 +200,7 @@ var App = React.createClass({
     // ------------------------------------------------------------------------
     uploadFiles: function () {
         let { nav, upload } = this.state;
-        let files = upload.files;
+        let files = upload.file;
         for (let item of files) {
             log('file:', item);
             let fr = new FileReader();
@@ -227,8 +223,8 @@ var App = React.createClass({
     // removing content
     // ------------------------------------------------------------------------
     removeFile: function () {
-        let { nav, file } = this.state;
-        socket.emit('remove-file', { location: joinPath(nav.path), name: file.base });
+        let { nav, content } = this.state;
+        socket.emit('remove-file', { location: joinPath(nav.path), name: content.file.base });
     },
     // ------------------------------------------------------------------------
     // render
@@ -251,7 +247,7 @@ var App = React.createClass({
                 'header',
                 { id: 'tool-area', className: 'grid' },
                 React.createElement(UploadBar, { upload: state.upload,
-                    uploadFile: this.uploadFile, uploadDir: this.uploadDir,
+                    uploadFiles: this.uploadFiles, uploadDir: this.uploadDir,
                     setUploadState: this.setUploadState
                 }),
                 React.createElement(NavBar, { nav: state.nav,
