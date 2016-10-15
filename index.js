@@ -11,7 +11,7 @@ const fs_router = require('./lib/routers/fs.js');
 const settings = require('./settings.json');
 const {connect} = require('./lib/socket.js');
 
-logging.startTimer('test');
+logging.startTimer('server_start');
 
 var app = express();
 
@@ -49,6 +49,7 @@ server.listen(listen_options.port,listen_options.host,listen_options.backlog,() 
     host: ${listen_options.host}
     port: ${listen_options.port}`);
     connect(server);
-    logging.stopTimer('test');
-    log('start up time:',logging.timerResults('test'));
+    logging.stopTimer('server_start');
+    log('start up time:',logging.timerResults('server_start'));
+    logging.clearTimer('server_start');
 });
