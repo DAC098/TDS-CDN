@@ -6,11 +6,13 @@
         "backlog": 500
     },
     "https": {
-        "enabled": false,
+        "enabled": true,
         "host": "localhost",
         "port": 3080,
         "backlog": 500,
-        "key": "",
-        "cert": ""
+        "key": "./ssl/TDSCDN_key.pem",
+        "cert": "./ssl/TDSCDN_cert.pem",
+        "passphrase": "devpass",
+        "redirect": true
     }
 }
