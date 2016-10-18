@@ -1,5 +1,5 @@
 var React = require('react');
-var socket = require('../../socket.js');
+var socket = require('../../fs/fs_socket.js');
 var store = require('../../Store.js');
 var {joinPath,splitPath} = require('../../misc.js');
 
