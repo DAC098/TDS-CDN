@@ -4,8 +4,11 @@
   "description": "basic cdn server using REST",
   "main": "index.js",
   "dependencies": {
+    "body-parser": "^1.15.2",
     "classnames": "^2.2.5",
+    "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
+    "express-session": "^1.14.1",
     "pump": "^1.0.1",
     "react": "^15.3.0",
     "react-dom": "^15.3.0",
