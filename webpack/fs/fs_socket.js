@@ -1,16 +1,24 @@
 var io = require('socket.io-client');
-var log = require('./CLogs.js').makeLogger('c-socket');
+var log = require('../CLogs.js').makeLogger('c-socket');
+var store = require('../Store.js');
 
 var is_client = typeof window !== 'undefined';
 
 if(is_client) {
+    let regex = /(guid\=*)\;/g;
+    let guid = regex.exec(document.cookie);
+    log('regex exec:',guid);
+    let guid_str = 'guid=' + guid;
 
-    var socket = io(window.location.origin);
+    log('cookie:',document.cookie);
+
+    var socket = io(window.location.origin+'/fs',{query:guid_str});
 
     let reconnecting = false;
+    let count = 0;
 
     socket.on('connect',() => {
-        log('connected to server')
+        log('connected to server');
     });
 
     socket.on('error',(err) => {
@@ -21,7 +29,13 @@ if(is_client) {
 
     socket.on('reconnect',() => {
         reconnecting = false;
+        count = 0;
         log('reconnected with server');
+    });
+
+    socket.on('reconnect_attempt',() => {
+        ++count;
+        log('count:',count);
     });
 
     socket.on('reconnecting',() => {
