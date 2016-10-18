@@ -1,5 +1,11 @@
-module.exports = {
+exports.fs = {
     output: {
-        filename: 'built.js'
+        filename: 'fs.js'
+    }
+}
+
+exports.login = {
+    output: {
+        filename: 'login.js'
     }
 }
