@@ -7,7 +7,8 @@ exports.sendJSON = function sendJSON(url,obj) {
         xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
         xhr.onreadystatechange = () => {
             if(xhr.readyState === XMLHttpRequest.DONE) {
-                resolve(xhr.status,xhr.response);
+                let {status,response} = xhr;
+                resolve({status,response});
             }
         }
         xhr.send(JSON.stringify(obj));
