@@ -13,8 +13,8 @@ var Login = React.createClass({
                 password: ''
             },
             valid: {
-                username: false,
-                password: false
+                username: true,
+                password: true
             }
         }
     },
@@ -27,58 +27,38 @@ var Login = React.createClass({
         input[key] = this.refs[key].value;
         this.setState({input});
     },
-    sendCheck: function(type,event) {
+    sendCheck: function(event) {
         event.preventDefault();
-        log('type:',type);
-        log('event:',event);
         let {input,valid} = this.state;
-        let promise = null;
-        switch (type) {
-            case 'username':
-                promise = sendJSON('/fs/login/check?type=username',{username:input.username});
-                promise.then((status,response) => {
-                    if(status === 200) {
-                        log('response:',response);
-                        let obj = JSON.parse(response);
-                        if(obj.valid) {
-                            valid.username = true;
-                            this.setState({valid});
-                        } else {
-                            log('invalid username');
-                        }
-                    } else {
-                        log('status code',status);
-                    }
-                });
-                break;
-            case 'password':
-                promise = sendJSON('/fs/login/check?type=password',input);
-                promise.then((status,response) => {
-                    if(status === 300) {
-                        log('redirecting');
-                    } else {
-                        log('response:',response);
-                    }
-                });
-                break;
-            default:
-
-        }
+        let {username,password} = input;
+        let promise = sendJSON('/fs/login/check',{username,password});
+        promise.then((data) => {
+            log('obj',data);
+            if(data.status >= 400) {
+                let obj = JSON.parse(data.response);
+                valid.username = obj.username;
+                valid.password = !obj.username;
+                log((!valid.username) ? 'invalid username' : 'invalid password');
+                this.setState({valid});
+            } else if(data.status === 300) {
+                log('redirecting');
+                let url = JSON.parse(data.response).url;
+                let redirect = window.location.origin + url;
+                window.location = redirect;
+            } else {
+                log('status code',data.status);
+            }
+        });
     },
-    render:function() {
-        let check_key = this.state.valid.username ? 'password' : 'username';
-        let button_value = this.state.valid.username ? 'Login' : 'Continue';
+    //
+    render: function() {
         return (
             <form id='login' ref='login'>
                 <input ref='username' onChange={() => this.handleInput('username')}
                     name='username' type='text' placeholder='Username' value={this.state.input.username}/>
-                {this.state.valid.username ?
-                    <input ref='password' onChange={() => this.handleInput('password')}
-                        name='password' type='text' placeholder='Password' value={this.state.input.password}/>
-                    :
-                    null
-                }
-                <input type='button' onClick={(event) => this.sendCheck(check_key,event)} value='Login' />
+                <input ref='password' onChange={() => this.handleInput('password')}
+                    name='password' type='text' placeholder='Password' value={this.state.input.password}/>
+                <input type='button' onClick={(event) => this.sendCheck(event)} value='Login' />
             </form>
         )
     }
