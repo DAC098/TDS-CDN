@@ -41,7 +41,7 @@ function handleStream(name,error) {
 }
 
 function logStart(name) {
-    gutil.log(`${gutil.colors.green('STARTING')}: ${name}`);
+    gutil.log(`${gutil.colors.green('STARTING')}:  ${name}`);
 }
 
 function buildReact() {
