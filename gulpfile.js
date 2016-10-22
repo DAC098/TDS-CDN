@@ -18,19 +18,24 @@ const dir = {
     less: {
         src: './build/less/main.less',
         imp: './build/less/imports/**/*.less',
-        out: './compiled/style'
+        out: './client/style'
     },
     fs_webpack: {
-        src: './webpack/fs/fs_main.js',
+        src: './webpack/fs/main.js',
         imp: ['./webpack/*.js','./webpack/fs/*.js'],
-        out: './compiled/scripts'
+        out: './client/scripts'
     },
     login_webpack: {
-        src: './webpack/login/login_main.js',
+        src: './webpack/login/main.js',
         imp: ['./webpack/*.js','./webpack/login/*.js'],
-        out: './compiled/scripts'
+        out: './client/scripts'
     }
 }
+
+var initial = {
+    login: true,
+    fs: true
+};
 
 function handleStream(name,error) {
     if(error) {
@@ -93,12 +98,20 @@ gulp.task('less',() => {
 });
 
 gulp.task('fs-pack',() => {
-    buildWebpack('fs');
+    if(!initial.fs) {
+        buildWebpack('fs');
+    } else {
+        initial.fs = false;
+    }
 });
 
 gulp.task('login-pack',() => {
-    buildWebpack('login');
-})
+    if(!initial.login) {
+        buildWebpack('login');
+    } else {
+        initial.login = true;
+    }
+});
 
 gulp.task('watch-less',() => {
     return watch([dir.less.src,dir.less.imp],() => buildLess());
