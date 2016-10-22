@@ -8,7 +8,8 @@ var NavBar = React.createClass({
         return (
             <section className='row'>
                 <ul className='horizontal'>
-                    <li><input onClick={() => this.props.fetchDirection('refresh')} type='button' value='refresh' /></li>
+                    <li><input onClick={() => this.props.logout()} type='button' value='Logout' /></li>
+                    <li><input onClick={() => this.props.fetchDirection('refresh')} type='button' value='Refresh' /></li>
                     <li><input disabled={nav.path.length === 0} onClick={() => this.props.fetchDirection('previous')} type='button' value='Back' /></li>
                     <li>directory: {joinPath(nav.path)}</li>
                 </ul>

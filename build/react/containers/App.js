@@ -1,5 +1,7 @@
 var React = require('react');
-var socket = require('../../fs/fs_socket.js');
+
+var {sendJSON} = require('../../xhr.js');
+var socket = require('../../fs/socket.js');
 var store = require('../../Store.js');
 var {joinPath,splitPath} = require('../../misc.js');
 
@@ -42,6 +44,7 @@ var App = React.createClass({
         let {nav} = this.state;
         let session_path = store.get('path'),
             session_type = store.get('type');
+
         socket.on('update',(response) => {
             log('update from server\nresponse:',response);
             self.checkUpdate(response);
@@ -81,6 +84,20 @@ var App = React.createClass({
 
     },
     // ------------------------------------------------------------------------
+    // user actions
+    // ------------------------------------------------------------------------
+    logout: function() {
+        let promise = sendJSON('/fs/user/logout',{});
+        promise.then((data) => {
+            if(data.status === 200) {
+                log('redirecting');
+                let url = JSON.parse(data.response).url;
+                let redirect = window.location.origin + url;
+                window.location = redirect;
+            }
+        });
+    },
+    // ------------------------------------------------------------------------
     // checks
     // ------------------------------------------------------------------------
     checkUpdate: function(response) {
@@ -103,7 +120,7 @@ var App = React.createClass({
         }
     },
     // ------------------------------------------------------------------------
-    // state methods
+    // state mutators
     // ------------------------------------------------------------------------
     setUploadState: function(key,value) {
         let {upload} = this.state;
@@ -244,11 +261,13 @@ var App = React.createClass({
             <main className="grid">
                 <header id="tool-area" className='grid'>
                     <UploadBar upload={state.upload}
-                        uploadFiles={this.uploadFiles} uploadDir={this.uploadDir}
+                        uploadFiles={this.uploadFiles}
+                        uploadDir={this.uploadDir}
                         setUploadState={this.setUploadState}
                     />
                     <NavBar nav={state.nav}
                         fetchDirection={this.fetchDirection}
+                        logout={this.logout}
                     />
                     <ItemInfo nav={state.nav} info={(state.nav.type.file) ? state.content.file : state.content.dir} />
                 </header>
