@@ -1,5 +1,4 @@
 var React = require('react');
-// var socket = require('../../login/login_socket.js');
 var store = require('../../Store.js');
 
 var log = require('../../CLogs.js').makeLogger('Login');
@@ -10,55 +9,103 @@ var Login = React.createClass({
         return {
             input: {
                 username: '',
-                password: ''
+                password: '',
+                confirm_password: '',
             },
             valid: {
                 username: true,
-                password: true
-            }
+                password: true,
+                confirm_password: true,
+            },
+            new_user: false
         }
     },
-    componentDidMount: function() {
-        var self = this;
-        log('login mounted');
-    },
+    componentDidMount: function() {},
+    // ------------------------------------------------------------------------
+    // state mutators
+    // ------------------------------------------------------------------------
     handleInput: function(key) {
         let {input} = this.state;
         input[key] = this.refs[key].value;
         this.setState({input});
     },
-    sendCheck: function(event) {
+    enableSignUp: function(event) {
         event.preventDefault();
-        let {input,valid} = this.state;
-        let {username,password} = input;
-        let promise = sendJSON('/fs/login/check',{username,password});
-        promise.then((data) => {
-            log('obj',data);
-            if(data.status >= 400) {
-                let obj = JSON.parse(data.response);
-                valid.username = obj.username;
-                valid.password = !obj.username;
-                log((!valid.username) ? 'invalid username' : 'invalid password');
-                this.setState({valid});
-            } else if(data.status === 300) {
-                log('redirecting');
-                let url = JSON.parse(data.response).url;
-                let redirect = window.location.origin + url;
-                window.location = redirect;
-            } else {
-                log('status code',data.status);
-            }
+        this.setState({
+            new_user: !this.state.new_user
         });
     },
-    //
+    sendUserData: function(event) {
+        event.preventDefault();
+        let {input,valid,new_user} = this.state;
+        let {username,password,confirm_password} = input;
+        if(new_user) {
+            let promise = sendJSON('/fs/user/create',input);
+            promise.then((data) => {
+                if(data.status === 300) {
+                    log('redirecting');
+                    let url = JSON.parse(data.response).url;
+                    let redirect = window.location.origin + url;
+                    window.location = redirect;
+                } else {
+                    log('status code',data.status,'\nresponse:',data.response);
+                }
+            });
+        } else {
+            let promise = sendJSON('/fs/user/login',{username,password});
+            promise.then((data) => {
+                if(data.status >= 400) {
+                    let obj = JSON.parse(data.response);
+                    valid.username = obj.username;
+                    valid.password = !obj.username;
+                    log((!valid.username) ? 'invalid username' : 'invalid password');
+                    this.setState({valid});
+                } else if(data.status === 200) {
+                    log('redirecting');
+                    let url = JSON.parse(data.response).url;
+                    let redirect = window.location.origin + url;
+                    window.location = redirect;
+                } else {
+                    log('status code',data.status,'\nresponse:',data.response);
+                }
+            });
+        }
+    },
+    // ------------------------------------------------------------------------
+    // render
+    // ------------------------------------------------------------------------
     render: function() {
+        let {input,display} = this.state;
         return (
             <form id='login' ref='login'>
-                <input ref='username' onChange={() => this.handleInput('username')}
-                    name='username' type='text' placeholder='Username' value={this.state.input.username}/>
-                <input ref='password' onChange={() => this.handleInput('password')}
-                    name='password' type='text' placeholder='Password' value={this.state.input.password}/>
-                <input type='button' onClick={(event) => this.sendCheck(event)} value='Login' />
+                <input ref='username'
+                    onChange={() => this.handleInput('username')}
+                    name='username' type='text' placeholder='Username'
+                    value={input.username}
+                />
+                <input ref='password'
+                    onChange={() => this.handleInput('password')}
+                    name='password' type='text' placeholder='Password'
+                    value={input.password}
+                />
+                {this.state.new_user ?
+                    <input ref='confirm_password'
+                        onChange={() => this.handleInput('confirm_password')}
+                        name='confirm_password' type='password'
+                        placeholder='Confrim Password'
+                        value={input.confirm_password}
+                    />
+                    :
+                    null
+                }
+                <input type='button'
+                    onClick={(event) => this.sendUserData(event)}
+                    value={(this.state.new_user) ? 'Sign Up' : 'Login'}
+                />
+                <input type='button'
+                    onClick={(event) => this.enableSignUp(event)}
+                    value={(this.state.new_user) ? 'Cancel' : 'Sign Up'}
+                />
             </form>
         )
     }
