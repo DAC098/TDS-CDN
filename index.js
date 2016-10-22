@@ -36,9 +36,7 @@ app.use(session);
 
 app.use(bodyParser.json());
 
-app.use(express.static('./compiled'));
-
-app.use(express.static('./assets'));
+app.use(express.static('./client'));
 
 app.use('/',fs_router);
 
