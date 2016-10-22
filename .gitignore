@@ -4,4 +4,8 @@ node_modules
 
 log_files
 
-webpack/react/*
+webpack/react
+
+webpack/react/containers
+
+webpack/react/components
