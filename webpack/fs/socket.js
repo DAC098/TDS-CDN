@@ -5,14 +5,8 @@ var store = require('../Store.js');
 var is_client = typeof window !== 'undefined';
 
 if(is_client) {
-    let regex = /(guid\=*)\;/g;
-    let guid = regex.exec(document.cookie);
-    log('regex exec:',guid);
-    let guid_str = 'guid=' + guid;
 
-    log('cookie:',document.cookie);
-
-    var socket = io(window.location.origin+'/fs',{query:guid_str});
+    var socket = io(window.location.origin+'/fs');
 
     let reconnecting = false;
     let count = 0;
