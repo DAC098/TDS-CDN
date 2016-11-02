@@ -19,7 +19,7 @@ var FileContents = React.createClass({
                     <li>modified: {isoDate(file.mtime)}</li>
                 </ul>
             </section>
-        )
+        );
     }
 });
 

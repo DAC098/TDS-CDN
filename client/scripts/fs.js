@@ -21438,6 +21438,8 @@
 
 	var log = __webpack_require__(222).makeLogger('App');
 
+	var is_client = typeof window !== 'undefined';
+
 	var App = React.createClass({
 	    displayName: 'App',
 
@@ -21507,12 +21509,21 @@
 	        socket.removeAllListeners();
 	        store.clear();
 	    },
-	    componentWillUpdate: function (props, state) {},
+	    componentWillReceiveProps: function (new_props) {
+	        if (!is_client) {
+	            console.log('setting directory from server');
+	            let { content } = this.state;
+	            if (new_props.dir) {
+	                content.dir = new_props.dir;
+	                this.setState({ content });
+	            }
+	        }
+	    },
 	    // ------------------------------------------------------------------------
 	    // user actions
 	    // ------------------------------------------------------------------------
 	    logout: function () {
-	        let promise = sendJSON('/fs/user/logout', {});
+	        let promise = sendJSON('/user/logout', {});
 	        promise.then(data => {
 	            if (data.status === 200) {
 	                log('redirecting');
@@ -29621,23 +29632,27 @@
 	            'section',
 	            { className: 'row' },
 	            React.createElement(
+	                'form',
+	                null,
+	                React.createElement('input', { className: 'small',
+	                    onClick: () => this.props.logout(),
+	                    type: 'button', value: 'Logout'
+	                }),
+	                React.createElement('input', { className: 'small',
+	                    onClick: () => this.props.fetchDirection('refresh'),
+	                    type: 'button', value: 'Refresh'
+	                }),
+	                React.createElement('input', { disabled: nav.path.length === 0, className: 'small',
+	                    onClick: () => this.props.fetchDirection('previous'),
+	                    type: 'button', value: 'Back'
+	                })
+	            ),
+	            React.createElement(
 	                'ul',
 	                { className: 'horizontal' },
-	                React.createElement(
-	                    'li',
-	                    null,
-	                    React.createElement('input', { onClick: () => this.props.logout(), type: 'button', value: 'Logout' })
-	                ),
-	                React.createElement(
-	                    'li',
-	                    null,
-	                    React.createElement('input', { onClick: () => this.props.fetchDirection('refresh'), type: 'button', value: 'Refresh' })
-	                ),
-	                React.createElement(
-	                    'li',
-	                    null,
-	                    React.createElement('input', { disabled: nav.path.length === 0, onClick: () => this.props.fetchDirection('previous'), type: 'button', value: 'Back' })
-	                ),
+	                React.createElement('li', null),
+	                React.createElement('li', null),
+	                React.createElement('li', null),
 	                React.createElement(
 	                    'li',
 	                    null,
@@ -29756,14 +29771,26 @@
 	            React.createElement(
 	                'form',
 	                null,
-	                React.createElement('input', { type: 'file', ref: 'file', multiple: true, onChange: () => this.handleChange('file') }),
-	                React.createElement('input', { type: 'button', onClick: () => this.props.uploadFiles(), value: 'upload' })
+	                React.createElement('input', { type: 'file', ref: 'file', multiple: true,
+	                    onChange: () => this.handleChange('file')
+	                }),
+	                React.createElement('input', { type: 'button', className: 'small',
+	                    onClick: () => this.props.uploadFiles(),
+	                    value: 'upload'
+	                })
 	            ),
 	            React.createElement(
 	                'form',
 	                null,
-	                React.createElement('input', { type: 'text', ref: 'dir', onChange: () => this.handleChange('dir'), value: this.props.upload.dir }),
-	                React.createElement('input', { type: 'button', onClick: () => this.props.uploadDir(), value: 'create' })
+	                React.createElement('input', { type: 'text', ref: 'dir',
+	                    className: 'inline',
+	                    onChange: () => this.handleChange('dir'),
+	                    value: this.props.upload.dir
+	                }),
+	                React.createElement('input', { type: 'button', className: 'small',
+	                    onClick: () => this.props.uploadDir(),
+	                    value: 'create'
+	                })
 	            )
 	        );
 	    }

@@ -42,7 +42,7 @@ var DirContents = React.createClass({
                     }
                 </tbody>
             </table>
-        )
+        );
     }
 });
 

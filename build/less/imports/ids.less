@@ -6,10 +6,27 @@
     background-color: #828282;
 }
 
+#render {
+    width: inherit;
+    height: inherit;
+}
+
 #header-pad {
     height: 96px;
 }
 
 #content-area {
+    display: block;
     height: ~'calc(100vh - 96px)';
+}
+
+#login {
+    position: absolute;
+    padding: .25em;
+    height: auto;
+    clear: both;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    box-shadow: 2px 2px 5px gray;
 }

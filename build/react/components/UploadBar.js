@@ -30,15 +30,27 @@ var UploadBar = React.createClass({
         return (
             <section className='row'>
                 <form>
-                    <input type='file' ref='file' multiple onChange={() => this.handleChange('file')} />
-                    <input type='button' onClick={() => this.props.uploadFiles()} value='upload'/>
+                    <input type='file' ref='file' multiple
+                        onChange={() => this.handleChange('file')}
+                    />
+                    <input type='button' className='small'
+                        onClick={() => this.props.uploadFiles()}
+                        value='upload'
+                    />
                 </form>
                 <form>
-                    <input type='text' ref='dir' onChange={() => this.handleChange('dir')} value={this.props.upload.dir} />
-                    <input type='button' onClick={() => this.props.uploadDir()} value='create'/>
+                    <input type='text' ref='dir'
+                        className='inline'
+                        onChange={() => this.handleChange('dir')}
+                        value={this.props.upload.dir}
+                    />
+                    <input type='button' className='small'
+                        onClick={() => this.props.uploadDir()}
+                        value='create'
+                    />
                 </form>
             </section>
-        )
+        );
     }
 });
 

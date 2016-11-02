@@ -10,7 +10,7 @@ exports.sendJSON = function sendJSON(url,obj) {
                 let {status,response} = xhr;
                 resolve({status,response});
             }
-        }
+        };
         xhr.send(JSON.stringify(obj));
     });
-}
+};

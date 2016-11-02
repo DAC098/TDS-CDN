@@ -30,7 +30,7 @@ const dir = {
         imp: ['./webpack/*.js','./webpack/login/*.js'],
         out: './client/scripts'
     }
-}
+};
 
 var initial = {
     login: true,
@@ -58,7 +58,7 @@ function buildReact() {
         }),
         gulp.dest(dir.react.out)
     ],(err) => {
-        handleStream('React',err)
+        handleStream('React',err);
         buildWebpack('fs');
         buildWebpack('login');
     });
@@ -123,8 +123,8 @@ gulp.task('watch-react',() => {
 
 gulp.task('watch-fs-pack',() => {
     let fs_imp = dir.fs_webpack.imp;
-    return watch([dir.fs_webpack.src,...fs_imp],() => buildWebpack('fs'))
-})
+    return watch([dir.fs_webpack.src,...fs_imp],() => buildWebpack('fs'));
+});
 
 gulp.task('watch-login-pack',() => {
     let login_imp = dir.login_webpack.imp;

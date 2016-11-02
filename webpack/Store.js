@@ -1,6 +1,6 @@
 function Store() {
 
-    var is_set = (typeof window === 'undefined') ? false : true;
+    var is_set = typeof window === 'undefined';
 
     var ss = (is_set) ? window.sessionStorage : null;
 
@@ -14,7 +14,7 @@ function Store() {
                 return ls.getItem(key);
             }
         }
-    }
+    };
 
     this.set = function set(key,value,use_ss = true) {
         if(is_set) {
@@ -24,7 +24,7 @@ function Store() {
                 ls.setItem(key,value);
             }
         }
-    }
+    };
 
     this.remove = function remove(key,use_ss = true) {
         if(is_set) {
@@ -34,7 +34,7 @@ function Store() {
                 ls.removeItem(key);
             }
         }
-    }
+    };
 
     this.clear = function clear(use_ss = true) {
         if(is_set) {
@@ -44,7 +44,7 @@ function Store() {
                 ls.clear();
             }
         }
-    }
+    };
 }
 
 module.exports = new Store();

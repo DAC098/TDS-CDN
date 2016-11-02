@@ -1,0 +1,24 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "rules": {
+        "semi": 2,
+        "brace-style": ["error","1tbs"],
+        "comma-dangle": ["error","never"],
+        "comma-style": ["error","last"],
+        "consistent-this": ["error","self"],
+        "func-call-spacing": ["error","never"],
+        "func-name-matching": "error",
+        "jsx-quotes": ["error","prefer-single"],
+        "no-unneeded-ternary": "error"
+    },
+    "env": {
+        "browser": true,
+        "node": true
+    }
+}

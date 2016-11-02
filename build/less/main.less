@@ -28,11 +28,40 @@ ul {
     }
 }
 
+form {
+
+    & input {
+
+        &[type='text'],
+        &[type='password'] {
+            display: block;
+            padding: .5em 1em;
+            border: 1px solid white;
+            margin: 0px;
+            transition: 200ms;
+            text-align: center;
+            outline: none;
+
+            &:focus {
+                outline: none;
+                border-color: orange;
+            }
+        }
+
+        &.inline {
+            display: inline-block;
+        }
+
+    }
+
+
+}
+
 .selected {
     background-color: #333333;
 }
 
 .scroll-area {
     overflow-x: auto;
-    overflow-y: auto;
+    overflow-y: scroll;
 }

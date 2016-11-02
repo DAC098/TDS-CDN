@@ -1,0 +1,19 @@
+.button,
+input[type='button'] {
+    display: inline-block;
+    margin: .25em 1em;
+    padding: .5em 1em;
+    clear: both;
+    background-color: white;
+    border: 1px solid white;
+    transition: 200ms;
+
+    &.small {
+        padding: .25em .5em;
+    }
+
+    &:hover {
+        border-color: orange;
+        box-shadow: 2px 2px 5px gray;
+    }
+}

@@ -9,7 +9,7 @@ exports.joinPath = function joinPath(paths = []) {
         str = (paths[c] !== '') ? `${str}/${paths[c]}` : str;
     }
     return str;
-}
+};
 
 exports.splitPath = function splitPath(str) {
     let rtn = str.split('/');
@@ -24,4 +24,4 @@ exports.splitPath = function splitPath(str) {
         }
     }
     return rtn;
-}
+};

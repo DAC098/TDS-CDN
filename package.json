@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "babel-preset-react": "^6.11.1",
+    "eslint": "^3.9.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-cli": "^1.2.2",

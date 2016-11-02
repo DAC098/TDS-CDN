@@ -13,6 +13,8 @@ var UploadBar = require('../components/UploadBar.js');
 
 var log = require('../../CLogs.js').makeLogger('App');
 
+var is_client = typeof window !== 'undefined';
+
 var App = React.createClass({
     getInitialState: function() {
         return {
@@ -30,14 +32,14 @@ var App = React.createClass({
                 path: [],
                 type: {
                     file: false,
-                    dir: false,
+                    dir: false
                 }
             },
             upload: {
                 file: [],
                 dir: ''
-            },
-        }
+            }
+        };
     },
     componentDidMount: function() {
         var self = this;
@@ -80,14 +82,21 @@ var App = React.createClass({
         socket.removeAllListeners();
         store.clear();
     },
-    componentWillUpdate: function(props,state) {
-
+    componentWillReceiveProps: function(new_props) {
+        if(!is_client) {
+            console.log('setting directory from server');
+            let {content} = this.state;
+            if(new_props.dir) {
+                content.dir = new_props.dir;
+                this.setState({content});
+            }
+        }
     },
     // ------------------------------------------------------------------------
     // user actions
     // ------------------------------------------------------------------------
     logout: function() {
-        let promise = sendJSON('/fs/user/logout',{});
+        let promise = sendJSON('/user/logout',{});
         promise.then((data) => {
             if(data.status === 200) {
                 log('redirecting');
@@ -225,7 +234,7 @@ var App = React.createClass({
                 socket.emit('upload-file',({
                     data: fr.result,
                     location: joinPath(nav.path),
-                    name: item.name,
+                    name: item.name
                 }));
             });
             fr.readAsArrayBuffer(item);
@@ -251,15 +260,15 @@ var App = React.createClass({
         let {nav} = state;
         let view = undefined;
         if(nav.type.file) {
-            view = <FileContents file={state.content.file} removeFile={this.removeFile}/>
+            view = <FileContents file={state.content.file} removeFile={this.removeFile} />;
         } else {
             view = <DirContents dir={state.content.dir} selected={state.selected} selectItem={this.selectItem}
                         fetch={this.fetch}
-                    />
+                    />;
         }
         return (
-            <main className="grid">
-                <header id="tool-area" className='grid'>
+            <main className='grid'>
+                <header id='tool-area' className='grid'>
                     <UploadBar upload={state.upload}
                         uploadFiles={this.uploadFiles}
                         uploadDir={this.uploadDir}
@@ -276,7 +285,7 @@ var App = React.createClass({
                     {view}
                 </section>
             </main>
-        )
+        );
     }
 });
 

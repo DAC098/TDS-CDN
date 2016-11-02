@@ -21467,7 +21467,7 @@
 	        let { input, valid, new_user } = this.state;
 	        let { username, password, confirm_password } = input;
 	        if (new_user) {
-	            let promise = sendJSON('/fs/user/create', input);
+	            let promise = sendJSON('/user/create', input);
 	            promise.then(data => {
 	                if (data.status === 300) {
 	                    log('redirecting');
@@ -21479,7 +21479,7 @@
 	                }
 	            });
 	        } else {
-	            let promise = sendJSON('/fs/user/login', { username, password });
+	            let promise = sendJSON('/user/login', { username, password });
 	            promise.then(data => {
 	                if (data.status >= 400) {
 	                    let obj = JSON.parse(data.response);
@@ -21504,32 +21504,47 @@
 	    render: function () {
 	        let { input, display } = this.state;
 	        return React.createElement(
-	            'form',
-	            { id: 'login', ref: 'login' },
-	            React.createElement('input', { ref: 'username',
-	                onChange: () => this.handleInput('username'),
-	                name: 'username', type: 'text', placeholder: 'Username',
-	                value: input.username
-	            }),
-	            React.createElement('input', { ref: 'password',
-	                onChange: () => this.handleInput('password'),
-	                name: 'password', type: 'text', placeholder: 'Password',
-	                value: input.password
-	            }),
-	            this.state.new_user ? React.createElement('input', { ref: 'confirm_password',
-	                onChange: () => this.handleInput('confirm_password'),
-	                name: 'confirm_password', type: 'password',
-	                placeholder: 'Confrim Password',
-	                value: input.confirm_password
-	            }) : null,
-	            React.createElement('input', { type: 'button',
-	                onClick: event => this.sendUserData(event),
-	                value: this.state.new_user ? 'Sign Up' : 'Login'
-	            }),
-	            React.createElement('input', { type: 'button',
-	                onClick: event => this.enableSignUp(event),
-	                value: this.state.new_user ? 'Cancel' : 'Sign Up'
-	            })
+	            'main',
+	            null,
+	            React.createElement(
+	                'div',
+	                { id: 'login', ref: 'login' },
+	                React.createElement('section', null),
+	                React.createElement(
+	                    'section',
+	                    null,
+	                    React.createElement(
+	                        'form',
+	                        null,
+	                        React.createElement('input', { ref: 'username',
+	                            onChange: () => this.handleInput('username'),
+	                            name: 'username', type: 'text',
+	                            placeholder: 'Username',
+	                            value: input.username
+	                        }),
+	                        React.createElement('input', { ref: 'password',
+	                            onChange: () => this.handleInput('password'),
+	                            name: 'password', type: 'text',
+	                            placeholder: 'Password',
+	                            value: input.password
+	                        }),
+	                        this.state.new_user ? React.createElement('input', { ref: 'confirm_password',
+	                            onChange: () => this.handleInput('confirm_password'),
+	                            name: 'confirm_password', type: 'password',
+	                            placeholder: 'Confrim Password',
+	                            value: input.confirm_password
+	                        }) : null,
+	                        React.createElement('input', { type: 'button', className: 'inline',
+	                            onClick: event => this.sendUserData(event),
+	                            value: this.state.new_user ? 'Sign Up' : 'Login'
+	                        }),
+	                        React.createElement('input', { type: 'button', className: 'inline',
+	                            onClick: event => this.enableSignUp(event),
+	                            value: this.state.new_user ? 'Cancel' : 'Sign Up'
+	                        })
+	                    )
+	                )
+	            )
 	        );
 	    }
 	});

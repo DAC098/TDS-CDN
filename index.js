@@ -40,12 +40,10 @@ app.use(express.static('./client'));
 
 app.use('/',fs_router);
 
-app.use('/cdn',cdn_router);
-
 if(opt_https.enabled) {
     let options = {
         key: fs.readFileSync(settings.https.key),
-        cert: fs.readFileSync(settings.https.cert),
+        cert: fs.readFileSync(settings.https.cert)
     };
 
     if('passphrase' in settings.https) {

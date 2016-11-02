@@ -7,7 +7,7 @@ function contentData(content) {
         dirs: 0,
         Kb: 0,
         Mb: 0
-    }
+    };
     if(Array.isArray(content)) {
         for(let item of content) {
             rtn.size += item.size;
@@ -28,7 +28,7 @@ var ItemInfo = React.createClass({
         let meta = contentData(this.props.info);
         return (
             <section id='dir-info' className='row'>
-                <ul className="horizontal">
+                <ul className='horizontal'>
                     <li>size: {meta.MiB}MiB | {meta.KiB}KiB</li>
                     { nav.type.dir ?
                         <li>files: {meta.files}, folders: {meta.dirs}</li>
@@ -37,7 +37,7 @@ var ItemInfo = React.createClass({
                     }
                 </ul>
             </section>
-        )
+        );
     }
 });
 
