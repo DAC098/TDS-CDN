@@ -21557,7 +21557,7 @@
 
 	function Store() {
 
-	    var is_set = (typeof window === 'undefined') ? false : true;
+	    var is_set = typeof window !== 'undefined';
 
 	    var ss = (is_set) ? window.sessionStorage : null;
 
@@ -21571,7 +21571,7 @@
 	                return ls.getItem(key);
 	            }
 	        }
-	    }
+	    };
 
 	    this.set = function set(key,value,use_ss = true) {
 	        if(is_set) {
@@ -21581,7 +21581,7 @@
 	                ls.setItem(key,value);
 	            }
 	        }
-	    }
+	    };
 
 	    this.remove = function remove(key,use_ss = true) {
 	        if(is_set) {
@@ -21591,7 +21591,7 @@
 	                ls.removeItem(key);
 	            }
 	        }
-	    }
+	    };
 
 	    this.clear = function clear(use_ss = true) {
 	        if(is_set) {
@@ -21601,7 +21601,7 @@
 	                ls.clear();
 	            }
 	        }
-	    }
+	    };
 	}
 
 	module.exports = new Store();
@@ -21626,14 +21626,14 @@
 	        let min = Math.floor(now / 1000 / 60 % 60);
 	        let hr = Math.floor(now / 1000 / 60 / 60 % 60);
 	        return `${padStart(hr,2,'0')}:${padStart(min,2,'0')}:${padStart(sec,2,'0')}.${padStart(ms,3,'0')}`;
-	    }
+	    };
 
 	    this.makeLogger = function makeLogger(name) {
 	        return function(...args) {
 	            var parent = self;
 	            console.log.apply(null,[`[${parent.now()}-${name}]:`,...args]);
-	        }
-	    }
+	        };
+	    };
 
 	}
 
@@ -21649,7 +21649,7 @@
 	exports.pad = function pad(num,places = 1) {
 	    var calc_array = [10,100,1000];
 	    var rtn = `${num}`;
-	    var count = 1
+	    var count = 1;
 	    for(const number of calc_array) {
 	        if(num < number) {
 	            rtn = `0${rtn}`;
@@ -21659,7 +21659,7 @@
 	        }
 	        ++count;
 	    }
-	}
+	};
 
 	function padStart(modify,length,fill = " ") {
 	    modify = (typeof modify !== 'string') ? String(modify) : modify;
@@ -21689,12 +21689,12 @@
 	        ++fill_count;
 	    }
 	    return modify;
-	}
+	};
 
 	exports.isoDate = function isoDate(date) {
 	    date = (typeof date === 'string') ? new Date(date) : date;
 	    return `${date.getFullYear()}-${padStart(date.getMonth() + 1,2,'0')}-${padStart(date.getDate(),2,'0')}T${padStart(date.getHours(),2,'0')}:${padStart(date.getMinutes(),2,'0')}:${padStart(date.getSeconds(),2,'0')}.${padStart(date.getMilliseconds(),3,'0')}Z`;
-	}
+	};
 
 
 /***/ },
@@ -21713,10 +21713,10 @@
 	                let {status,response} = xhr;
 	                resolve({status,response});
 	            }
-	        }
+	        };
 	        xhr.send(JSON.stringify(obj));
 	    });
-	}
+	};
 
 
 /***/ }

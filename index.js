@@ -1,3 +1,16 @@
+const Server = require('./lib/server.js');
+
+const settings = require('./settings.json');
+
+var main = new Server();
+
+if(settings.https.enabled) {
+    main.startHTTPS();
+}
+
+main.startHTTP();
+
+/*
 // node modules
 const http = require('http');
 const https = require('https');
@@ -72,3 +85,4 @@ server_http = http.createServer(app).listen(opt_http.port,opt_http.host,opt_http
     log('start up time:',logging.timerResults('http_server_start'));
     logging.clearTimer('http_server_start');
 });
+*/

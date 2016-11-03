@@ -18,5 +18,18 @@
     "db": {
         "host": "127.0.0.1",
         "port": 27017
+    },
+    "logging": {
+        "console": {
+            "log": true,
+            "debug": true,
+            "error": true
+        },
+        "file": {
+            "dir": "./log_files",
+            "log": false,
+            "debug": false,
+            "error": false
+        }
     }
 }

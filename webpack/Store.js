@@ -1,6 +1,6 @@
 function Store() {
 
-    var is_set = typeof window === 'undefined';
+    var is_set = typeof window !== 'undefined';
 
     var ss = (is_set) ? window.sessionStorage : null;
 
