@@ -1,27 +1,27 @@
 {
-    "root": "Z:\\Pictures\\New folder",
-    "http": {
-        "host": "localhost",
-        "port": 3050,
-        "backlog": 500
-    },
-    "https": {
-        "enabled": true,
-        "host": "localhost",
-        "port": 3080,
-        "backlog": 500,
-        "key": "./ssl/TDSCDN_key.pem",
-        "cert": "./ssl/TDSCDN_cert.pem",
-        "passphrase": "devpass",
-        "redirect": true
-    },
-    "db": {
-        "host": "127.0.0.1",
-        "port": 27017
-    },
-    "logging": {
-        "console": true,
-        "file": true,
-        "dir": "./log_files"
-    }
+	"root": "Z:\\Pictures\\New folder",
+	"http": {
+		"host": "localhost",
+		"port": 3050,
+		"backlog": 500
+	},
+	"https": {
+		"enabled": true,
+		"host": "localhost",
+		"port": 3080,
+		"backlog": 500,
+		"key": "./ssl/TDSCDN_key.pem",
+		"cert": "./ssl/TDSCDN_cert.pem",
+		"passphrase": "devpass",
+		"redirect": true
+	},
+	"db": {
+		"host": "127.0.0.1",
+		"port": 27017
+	},
+	"logging": {
+		"console": true,
+		"file": true,
+		"dir": "./log_files"
+	}
 }

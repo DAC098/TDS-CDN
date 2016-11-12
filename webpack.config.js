@@ -1,11 +1,11 @@
 exports.fs = {
-    output: {
-        filename: 'fs.js'
-    }
+	output: {
+		filename: 'fs.js'
+	}
 };
 
 exports.login = {
-    output: {
-        filename: 'login.js'
-    }
+	output: {
+		filename: 'login.js'
+	}
 };
